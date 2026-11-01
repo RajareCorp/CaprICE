@@ -28,6 +28,7 @@ namespace CaprICE.UI
         public static readonly Color Brim = Color.FromArgb(120, 30, 44);
         public static readonly Color Well = Color.FromArgb(12, 11, 20);
         public static readonly Color WellEdge = Color.FromArgb(72, 28, 40);
+        private static readonly Blend GlowFade = CreateGlowFade();
 
         // Status Colors
         public static readonly Color StatusAllowed = Color.FromArgb(94, 240, 246);
@@ -42,6 +43,18 @@ namespace CaprICE.UI
         public static Font FontMono = CreateFont("Consolas", "ShareTechMono-Regular", 11.0f, FontStyle.Regular);
         public static Font FontSmall = CreateFont("Bahnschrift Condensed", "Segoe UI", 10.0f, FontStyle.Regular);
         public static Font FontBadge = CreateFont("Bahnschrift SemiBold SemiConden", "Segoe UI", 10.5f, FontStyle.Bold);
+
+        private static Blend CreateGlowFade()
+        {
+            Blend blend = new Blend(9);
+            for (int i = 0; i < 9; i++)
+            {
+                float position = i / 8f;
+                blend.Positions[i] = position;
+                blend.Factors[i] = 1 - (1 - position) * (1 - position);
+            }
+            return blend;
+        }
 
         private static Font CreateFont(string family1, string family2, float size, FontStyle style)
         {
@@ -102,7 +115,7 @@ namespace CaprICE.UI
             }
 
             RectangleF hot = RectangleF.Inflate(box, -0.6f, -0.6f);
-            using (Pen stroke = new Pen(Hot, 2.8f))
+            using (Pen stroke = new Pen(Hot, 4.5f))
             {
                 graphics.DrawLines(stroke, new[]
                 {
@@ -132,11 +145,12 @@ namespace CaprICE.UI
             if (glow < 1) return;
 
             using (LinearGradientBrush wine = new LinearGradientBrush(
-                new RectangleF(0, -1, size.Width, glow + 2),
+                new RectangleF(0, -1, 16, glow + 2),
                 Glow,
                 Ground,
                 LinearGradientMode.Vertical))
             {
+                wine.Blend = GlowFade;
                 graphics.FillRectangle(wine, 0, 0, size.Width, glow);
             }
         }

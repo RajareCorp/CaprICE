@@ -8,19 +8,12 @@ namespace CaprICE.UI
     {
         private readonly Color headingColor;
         private readonly Font boldFont;
-        private readonly Timer formattingTimer;
         private bool formatting;
 
         public ReadableTextEditor(Color headingColor)
         {
             this.headingColor = headingColor;
             boldFont = new Font(NeonTheme.FontMono, FontStyle.Bold);
-            formattingTimer = new Timer { Interval = 250 };
-            formattingTimer.Tick += (s, e) =>
-            {
-                formattingTimer.Stop();
-                ApplyReadableFormatting();
-            };
             Multiline = true;
             WordWrap = true;
             AcceptsTab = true;
@@ -34,13 +27,14 @@ namespace CaprICE.UI
             SelectionIndent = 10;
             SelectionRightIndent = 10;
             Padding = new Padding(8);
+            Leave += (s, e) => ApplyReadableFormatting();
         }
 
         protected override void OnTextChanged(EventArgs e)
         {
             base.OnTextChanged(e);
-            formattingTimer.Stop();
-            formattingTimer.Start();
+            if (!Focused)
+                ApplyReadableFormatting();
         }
 
         private void ApplyReadableFormatting()
@@ -110,8 +104,6 @@ namespace CaprICE.UI
         {
             if (disposing)
             {
-                formattingTimer.Stop();
-                formattingTimer.Dispose();
                 boldFont.Dispose();
             }
             base.Dispose(disposing);

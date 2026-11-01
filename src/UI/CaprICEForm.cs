@@ -13,7 +13,7 @@ namespace CaprICE.UI
 {
     /// <summary>
     /// Fenêtre principale « Mission Control ».
-    /// Convertie en Single-Page Shell avec navigation par Sidebar et transitions Glitch.
+    /// Convertie en Single-Page Shell avec navigation par Sidebar.
     /// </summary>
     public partial class CaprICEForm : Form
     {
@@ -83,7 +83,7 @@ namespace CaprICE.UI
 
         private Panel pnlPromptDrawer;
 
-        // Nouveaux composants pour le Single-Page Workspace avec Glitch
+        // Composants pour le Single-Page Workspace
         private Panel pnlSidebar;
         private Panel pnlWorkspace;
         private Panel pnlSecurityView;
@@ -251,31 +251,13 @@ namespace CaprICE.UI
             return layout;
         }
 
-        /// <summary>
-        /// Permute la vue active dans le Workspace en appliquant un effet de Glitch RGB.
-        /// </summary>
+        /// <summary>Permute la vue active dans le Workspace.</summary>
         private void SwitchWorkspaceView(Control targetView, CyberNavButton targetButton)
         {
             if (targetView == null || activeView == targetView) return;
 
-            GlitchOverlay previousGlitch = null;
-            foreach (Control control in pnlWorkspace.Controls)
-            {
-                if (control is GlitchOverlay)
-                {
-                    previousGlitch = (GlitchOverlay)control;
-                    break;
-                }
-            }
-            if (previousGlitch != null)
-            {
-                pnlWorkspace.Controls.Remove(previousGlitch);
-                previousGlitch.Dispose();
-            }
-
             if (activeView != null)
             {
-                GlitchOverlay glitch = new GlitchOverlay(pnlWorkspace);
                 pnlWorkspace.Controls.Remove(activeView);
 
                 foreach (Control ctrl in pnlSidebar.Controls)
@@ -288,10 +270,6 @@ namespace CaprICE.UI
                 targetView.Dock = DockStyle.Fill;
                 pnlWorkspace.Controls.Add(targetView);
                 activeView = targetView;
-
-                glitch.Dock = DockStyle.Fill;
-                pnlWorkspace.Controls.Add(glitch);
-                glitch.BringToFront();
                 return;
             }
 
@@ -327,6 +305,33 @@ namespace CaprICE.UI
             base.OnPaint(e);
             NeonTheme.Backdrop(e.Graphics, this.Size, 140);
             NeonTheme.Frame(e.Graphics, this.Size, 20, 6, 28, 28);
+            if (WindowState == FormWindowState.Normal)
+            {
+                using (Pen grip = new Pen(NeonTheme.Cyan, 1.4F))
+                {
+                    for (int offset = 0; offset < 3; offset++)
+                    {
+                        int inset = 7 + offset * 4;
+                        e.Graphics.DrawLine(grip, Width - inset, Height - 4, Width - 4, Height - inset);
+                    }
+                }
+            }
+        }
+
+        protected override void WndProc(ref Message message)
+        {
+            const int WM_NCHITTEST = 0x0084;
+            if (message.Msg == WM_NCHITTEST)
+            {
+                int hitTest = NativeMethods.ResizeHitTest(this, message.LParam);
+                if (hitTest != 0)
+                {
+                    message.Result = new IntPtr(hitTest);
+                    return;
+                }
+            }
+
+            base.WndProc(ref message);
         }
 
         public static bool PromptConfirmation(string title, string content, List<string> warnings)

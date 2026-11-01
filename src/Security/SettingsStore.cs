@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
+using CaprICE.Hooks;
 
 namespace CaprICE.Security
 {
@@ -26,7 +28,10 @@ namespace CaprICE.Security
                 sb.AppendLine("  \"MaskCreditCards\": " + Bool(SecurityPolicy.MaskCreditCards) + ",");
                 sb.AppendLine("  \"MaskCustomNames\": " + Bool(SecurityPolicy.MaskCustomNames) + ",");
                 sb.AppendLine("  \"CustomNames\": \"" + Escape(SecurityPolicy.CustomNames) + "\",");
-                sb.AppendLine("  \"CustomAddresses\": \"" + Escape(SecurityPolicy.CustomAddresses) + "\"");
+                sb.AppendLine("  \"CustomAddresses\": \"" + Escape(SecurityPolicy.CustomAddresses) + "\",");
+                sb.AppendLine("  \"CustomPersonality\": \"" + Escape(SecurityPolicyText(CaprICEHook.CustomPersonality)) + "\",");
+                sb.AppendLine("  \"CustomSafety\": \"" + Escape(SecurityPolicyText(CaprICEHook.CustomSafety)) + "\",");
+                sb.AppendLine("  \"CustomMachinery\": \"" + Escape(SecurityPolicyText(CaprICEHook.CustomMachinery)) + "\"");
                 sb.AppendLine("}");
                 File.WriteAllText(StoragePaths.Settings, sb.ToString(), Encoding.UTF8);
                 return true;
@@ -61,13 +66,17 @@ namespace CaprICE.Security
                 SecurityPolicy.MaskCreditCards = GetBool(json, "MaskCreditCards", SecurityPolicy.MaskCreditCards);
                 SecurityPolicy.MaskCustomNames = GetBool(json, "MaskCustomNames", SecurityPolicy.MaskCustomNames);
 
-                Match mNames = Regex.Match(json, @"""CustomNames""\s*:\s*""([^""]*)""");
-                if (mNames.Success) SecurityPolicy.CustomNames = mNames.Groups[1].Value;
-
-                Match mAddrs = Regex.Match(json, @"""CustomAddresses""\s*:\s*""([^""]*)""");
-                if (mAddrs.Success) SecurityPolicy.CustomAddresses = mAddrs.Groups[1].Value;
+                string value;
+                if (TryReadString(json, "CustomNames", out value)) SecurityPolicy.CustomNames = value;
+                if (TryReadString(json, "CustomAddresses", out value)) SecurityPolicy.CustomAddresses = value;
+                if (TryReadString(json, "CustomPersonality", out value)) CaprICEHook.CustomPersonality = EmptyAsNull(value);
+                if (TryReadString(json, "CustomSafety", out value)) CaprICEHook.CustomSafety = EmptyAsNull(value);
+                if (TryReadString(json, "CustomMachinery", out value)) CaprICEHook.CustomMachinery = EmptyAsNull(value);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Unable to load CaprICE settings: " + ex.Message);
+            }
         }
 
         private static string Bool(bool value)
@@ -77,7 +86,27 @@ namespace CaprICE.Security
 
         private static string Escape(string value)
         {
-            return (value ?? "").Replace("\"", "\\\"").Replace("\r", " ").Replace("\n", " ");
+            StringBuilder escaped = new StringBuilder();
+            foreach (char character in value ?? "")
+            {
+                switch (character)
+                {
+                    case '"': escaped.Append("\\\""); break;
+                    case '\\': escaped.Append("\\\\"); break;
+                    case '\b': escaped.Append("\\b"); break;
+                    case '\f': escaped.Append("\\f"); break;
+                    case '\n': escaped.Append("\\n"); break;
+                    case '\r': escaped.Append("\\r"); break;
+                    case '\t': escaped.Append("\\t"); break;
+                    default:
+                        if (character < 0x20)
+                            escaped.Append("\\u").Append(((int)character).ToString("x4"));
+                        else
+                            escaped.Append(character);
+                        break;
+                }
+            }
+            return escaped.ToString();
         }
 
         private static bool GetBool(string json, string key, bool fallback)
@@ -85,6 +114,67 @@ namespace CaprICE.Security
             Match m = Regex.Match(json, @"""" + key + @"""\s*:\s*(true|false)", RegexOptions.IgnoreCase);
             if (m.Success) return bool.Parse(m.Groups[1].Value);
             return fallback;
+        }
+
+        private static bool TryReadString(string json, string key, out string value)
+        {
+            Match match = Regex.Match(json,
+                "\"" + Regex.Escape(key) + "\"\\s*:\\s*(\"(?:\\\\.|[^\"\\\\])*\")",
+                RegexOptions.Singleline);
+            if (!match.Success)
+            {
+                value = null;
+                return false;
+            }
+
+            value = Unescape(match.Groups[1].Value.Substring(1, match.Groups[1].Value.Length - 2));
+            return true;
+        }
+
+        private static string Unescape(string value)
+        {
+            StringBuilder result = new StringBuilder(value.Length);
+            for (int i = 0; i < value.Length; i++)
+            {
+                char character = value[i];
+                if (character != '\\' || i + 1 >= value.Length)
+                {
+                    result.Append(character);
+                    continue;
+                }
+
+                char escape = value[++i];
+                switch (escape)
+                {
+                    case '"': result.Append('"'); break;
+                    case '\\': result.Append('\\'); break;
+                    case '/': result.Append('/'); break;
+                    case 'b': result.Append('\b'); break;
+                    case 'f': result.Append('\f'); break;
+                    case 'n': result.Append('\n'); break;
+                    case 'r': result.Append('\r'); break;
+                    case 't': result.Append('\t'); break;
+                    case 'u':
+                        if (i + 4 >= value.Length)
+                            throw new FormatException("Séquence Unicode JSON incomplète.");
+                        result.Append((char)Convert.ToInt32(value.Substring(i + 1, 4), 16));
+                        i += 4;
+                        break;
+                    default:
+                        throw new FormatException("Séquence d'échappement JSON invalide.");
+                }
+            }
+            return result.ToString();
+        }
+
+        private static string SecurityPolicyText(string value)
+        {
+            return value ?? string.Empty;
+        }
+
+        private static string EmptyAsNull(string value)
+        {
+            return string.IsNullOrEmpty(value) ? null : value;
         }
     }
 }

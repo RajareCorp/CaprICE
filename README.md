@@ -24,6 +24,7 @@
 ### Contrôles de Fenêtre & Ergonomie
 
 * **Déplacement fluide** : Glissez-déposez la fenêtre via la bannière supérieure (`ReleaseCapture` + `SendMessage`).
+* **Redimensionnement** : La fenêtre sans bordure peut être redimensionnée par ses bords et ses coins ; sa taille minimale est de 1000 × 650 px.
 * **Fermeture rapide** : Bouton `[X]` dédié ou touche **Échap** (`ESC`).
 * **Minimisation** : Bouton `[_]` pour réduire la fenêtre dans la barre des tâches.
 
@@ -86,6 +87,8 @@ Depuis le tiroir **MEMORY**, **PURGER LES DONNÉES LOCALES** supprime le chat, l
 ### ✍️ Lecture des prompts et de la mémoire
 
 Les éditeurs **PROMPTS** et **MEMORY** replient les longues lignes, conservent les retours à la ligne et mettent en couleur les titres Markdown, citations et listes. La mise en couleur est uniquement visuelle : le texte brut est celui qui est appliqué ou sauvegardé.
+
+Les trois sections du prompt personnalisé sont enregistrées avec les paramètres CaprICE lorsque **APPLIQUER LES HOOKS PROMPT** est sélectionné. Les retours à la ligne sont préservés au redémarrage.
 
 ---
 
@@ -155,6 +158,7 @@ powershell -ExecutionPolicy Bypass -File caprice\build-caprice.ps1
 * **Smooth movement**: Drag-and-drop support across the entire top banner (`ReleaseCapture` + `SendMessage`).
 * **Quick close**: Dedicated `[X]` button or **Escape** (`ESC`) key.
 * **Minimize**: `[_]` button to minimize directly to the taskbar.
+* **Resize**: The borderless window can be resized from its edges and corners; minimum size is 1000 × 650 px.
 
 ### 📐 Expanded Dimensions
 
@@ -215,6 +219,8 @@ From **MEMORY**, **PURGER LES DONNÉES LOCALES** removes chat history, local not
 ### ✍️ Prompt and memory readability
 
 The **PROMPTS** and **MEMORY** editors wrap long lines, preserve line breaks, and color Markdown headings, quotes, and lists. Formatting is visual only; applied and saved content remains plain text.
+
+All three custom prompt sections are stored with CaprICE settings when **APPLIQUER LES HOOKS PROMPT** is selected. Line breaks are preserved across restarts.
 
 ---
 

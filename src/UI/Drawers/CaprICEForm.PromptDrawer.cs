@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using CaprICE.Hooks;
+using CaprICE.Security;
 using CaprICE.Services;
 
 namespace CaprICE.UI
@@ -65,14 +66,27 @@ namespace CaprICE.UI
             Button btnSave = CyberControls.Button("APPLIQUER LES HOOKS PROMPT", 250, 36, NeonTheme.DeepEdge, NeonTheme.Rose);
             btnSave.Click += (s, e) =>
             {
-                CaprICEHook.CustomPersonality = string.IsNullOrWhiteSpace(txtPersonality.Text) ? null : txtPersonality.Text.Trim();
-                CaprICEHook.CustomSafety = string.IsNullOrWhiteSpace(txtSafety.Text) ? null : txtSafety.Text.Trim();
-                CaprICEHook.CustomMachinery = string.IsNullOrWhiteSpace(txtMachinery.Text) ? null : txtMachinery.Text.Trim();
+                string previousPersonality = CaprICEHook.CustomPersonality;
+                string previousSafety = CaprICEHook.CustomSafety;
+                string previousMachinery = CaprICEHook.CustomMachinery;
+                CaprICEHook.CustomPersonality = string.IsNullOrWhiteSpace(txtPersonality.Text) ? null : txtPersonality.Text;
+                CaprICEHook.CustomSafety = string.IsNullOrWhiteSpace(txtSafety.Text) ? null : txtSafety.Text;
+                CaprICEHook.CustomMachinery = string.IsNullOrWhiteSpace(txtMachinery.Text) ? null : txtMachinery.Text;
+
+                if (!SecurityPolicy.SaveSettings(out string error))
+                {
+                    CaprICEHook.CustomPersonality = previousPersonality;
+                    CaprICEHook.CustomSafety = previousSafety;
+                    CaprICEHook.CustomMachinery = previousMachinery;
+                    MessageBox.Show("Le prompt n'a pas été sauvegardé : " + error,
+                        "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
                 bool historyCleared = CaprICEHook.ClearBrainHistory();
                 MessageBox.Show(historyCleared
-                        ? "Nouveau System Prompt modulaire appliqué."
-                        : "Le prompt a été appliqué, mais l'historique actif de Capri n'a pas pu être vidé.",
+                        ? "Prompt personnalisé sauvegardé et appliqué."
+                        : "Prompt sauvegardé et appliqué, mais l'historique actif de Capri n'a pas pu être vidé.",
                     "CaprICE", MessageBoxButtons.OK,
                     historyCleared ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
                 SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
