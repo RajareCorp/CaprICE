@@ -175,7 +175,7 @@ namespace CaprICE.Hooks
         {
             if (!string.IsNullOrEmpty(__result))
             {
-                __result = "I.C.E Initialized. " + __result;
+                __result = "[I.C.E Initialized] " + __result;
             }
         }
     }
