@@ -31,9 +31,9 @@
 
 * Résolution augmentée à **1240 x 800 px** pour une consultation optimale du trafic et de l'inspecteur de payload.
 
-### 🛡️ Panneau "PARAMÈTRES DLP" (Masquage PII Étendu)
+### 🛡️ Paramètres DLP
 
-Affichez le panneau latéral via le bouton **PARAMÈTRES DLP** pour configurer la protection contre les fuites de données :
+Le tiroir **SETTINGS** présente les règles en deux colonnes, dans le style du Mainframe. En mode Enforce DLP, l'inspection porte sur tout le contexte textuel construit pour le modèle : instructions système, historique, note mémoire, contexte rappelé, arguments d'outils et texte multimodal. Les pixels des images jointes ne sont pas analysés par OCR ; si une donnée sensible est détectée dans le texte multimodal, l'envoi est bloqué afin de ne pas corrompre son format.
 
 | Type de Donnée | Description / Formats Couverts |
 | --- | --- |
@@ -44,7 +44,8 @@ Affichez le panneau latéral via le bouton **PARAMÈTRES DLP** pour configurer l
 | **Adresses privées** | Champ personnalisé (ex: `12 rue de la Paix, 75001 Paris`) |
 | **Identifiants secrets** | Clés API, tokens secrets, mots de passe, emails, cartes bancaires & chemins Windows (`C:\Users\...`) |
 
-* **Sauvegarde automatique** : Le bouton **"ENREGISTRER LES PARAMÈTRES"** persiste vos règles dans `caprice_settings.json` pour un rechargement automatique au démarrage.
+* **Sauvegarde** : Le bouton **ENREGISTRER** persiste les règles dans `caprice_settings.json` pour un rechargement automatique au démarrage.
+* Les noms et adresses personnalisés ne sont pas recopiés dans les libellés DLP du journal.
 
 ### 💡 Assistance & Interface Dynamique
 
@@ -60,9 +61,9 @@ Affichez le panneau latéral via le bouton **PARAMÈTRES DLP** pour configurer l
 |                         POLITIQUES DE SÉCURITÉ                        |
 +-------------------+---------------------------------------------------+
 | 🔍 MONITOR ONLY   | Audit passif sans interruption des requêtes.      |
-| 🛡️ ENFORCE DLP     | Masquage automatique des PII avant envoi cloud.   |
-| 🔒 STRICT LOCAL   | Bloque le cloud ; seul Ollama (127.0.0.1) passe.  |
-| ✋ ASK CONFIRM    | Confirmation manuelle avec prévisualisation.     |
+| 🛡️ ENFORCE DLP     | Masque les données sensibles du contexte sortant.  |
+| 🔒 STRICT LOCAL   | Bloque les URL externes ; autorise les loopbacks.  |
+| ✋ ASK CONFIRM    | Confirme chaque connexion externe avec son hôte.   |
 +-------------------+---------------------------------------------------+
 
 ```
@@ -70,11 +71,21 @@ Affichez le panneau latéral via le bouton **PARAMÈTRES DLP** pour configurer l
 1. **MONITOR ONLY (Audit Passif)**
 N'interrompt jamais les requêtes. Observe et enregistre chaque échange en arrière-plan.
 2. **ENFORCE DLP (Prévention de Fuite de Données)**
-Scanne chaque prompt avant l'envoi vers le cloud et masque automatiquement les données sensibles.
+Scanne et masque les données sensibles dans le prompt complet avant un envoi externe. Si le masquage est désactivé et qu'une donnée sensible est détectée, la requête est bloquée.
 3. **STRICT LOCAL (Verrou Cloud / Offline)**
-Bloque immédiatement toute connexion vers les IA cloud externes. Seul Ollama local (`127.0.0.1`) est autorisé.
+Bloque immédiatement toute connexion vers une adresse non-loopback, y compris les connexions vocales. Les serveurs locaux loopback restent autorisés.
 4. **ASK CONFIRMATION (Contrôle Manuel)**
-Ouvre une fenêtre d'approbation avec prévisualisation du prompt (`Autoriser` ou `Bloquer`).
+Demande l'approbation avant chaque connexion externe de Brain ou Voice, en affichant l'URL réelle et un aperçu du contexte sortant. Les clés vocales ne sont jamais journalisées.
+
+La détection classe les fournisseurs à partir de l'hôte URI exact (ou de ses sous-domaines), sans confondre un domaine ressemblant avec un fournisseur reconnu.
+
+### 🧹 Purge mémoire
+
+Depuis le tiroir **MEMORY**, **PURGER LES DONNÉES LOCALES** supprime le chat, les notes locales et les transcriptions, puis vide l'historique, les captures et le cache mémoire actifs. La note sélectionnée dans un vault externe est préservée ; elle reste active et pourra être relue lors des prochaines requêtes.
+
+### ✍️ Lecture des prompts et de la mémoire
+
+Les éditeurs **PROMPTS** et **MEMORY** replient les longues lignes, conservent les retours à la ligne et mettent en couleur les titres Markdown, citations et listes. La mise en couleur est uniquement visuelle : le texte brut est celui qui est appliqué ou sauvegardé.
 
 ---
 
@@ -149,9 +160,9 @@ powershell -ExecutionPolicy Bypass -File caprice\build-caprice.ps1
 
 * Higher resolution at **1240 x 800 px**, offering an expanded workspace for traffic logs and payload inspection.
 
-### 🛡️ Extended DLP Settings Panel (PII Masking)
+### 🛡️ DLP Settings
 
-Open the lateral configuration drawer by clicking **DLP SETTINGS**:
+The **SETTINGS** drawer uses a two-column layout inspired by Capri Mainframe. Enforce DLP scans the complete textual model context: system instructions, conversation history, memory note, recalled context, tool arguments, and multimodal text. Image pixels are not OCR-scanned; if sensitive data is found in multimodal text, the request is blocked to avoid corrupting its format.
 
 | Data Category | Detection & Masking Details |
 | --- | --- |
@@ -162,7 +173,8 @@ Open the lateral configuration drawer by clicking **DLP SETTINGS**:
 | **Custom Addresses** | Dedicated field for private locations (e.g. `10 Downing Street`) |
 | **Secrets & Keys** | API keys, secret tokens, passwords, emails, credit cards & Windows user paths (`C:\Users\...`) |
 
-* **Auto-Persistence**: Click **"SAVE SETTINGS"** to write rules to `caprice_settings.json`, automatically reloaded on boot.
+* **Persistence**: Click **SAVE** to write rules to `caprice_settings.json`, automatically reloaded on boot.
+* Custom names and addresses are not included in DLP detection labels written to the audit log.
 
 ### 💡 Dynamic UI & In-App Guide
 
@@ -178,9 +190,9 @@ Open the lateral configuration drawer by clicking **DLP SETTINGS**:
 |                          SECURITY POLICIES                            |
 +-------------------+---------------------------------------------------+
 | 🔍 MONITOR ONLY   | Passive audit with zero request interruption.      |
-| 🛡️ ENFORCE DLP     | Automatic PII scrubbing before cloud upload.      |
-| 🔒 STRICT LOCAL   | Cloud block; only local Ollama (127.0.0.1) runs.  |
-| ✋ ASK CONFIRM    | Manual prompt inspection and approval workflow.   |
+| 🛡️ ENFORCE DLP     | Masks sensitive data in the complete outgoing input. |
+| 🔒 STRICT LOCAL   | Blocks non-loopback URLs; loopback stays allowed. |
+| ✋ ASK CONFIRM    | Confirms each external connection and its host.    |
 +-------------------+---------------------------------------------------+
 
 ```
@@ -188,11 +200,21 @@ Open the lateral configuration drawer by clicking **DLP SETTINGS**:
 1. **MONITOR ONLY (Passive Audit)**
 Passively logs transactions without interfering with Capri operations.
 2. **ENFORCE DLP (Data Loss Prevention)**
-Scans every prompt prior to cloud transmission and strips sensitive information.
+Scans and masks sensitive data in the complete input before an external request. If masking is disabled and sensitive data is found, the request is blocked.
 3. **STRICT LOCAL (Offline / Cloud Lock)**
-Instantly blocks external cloud AI traffic. Exclusively permits local Ollama (`127.0.0.1`).
+Blocks every non-loopback connection, including voice connections. Loopback servers remain allowed.
 4. **ASK CONFIRMATION (Manual Control)**
-Displays an interactive preview window before sending prompts to external LLMs (`Allow` / `Block`).
+Requests approval before each external Brain or Voice connection, showing its real URL and an outgoing-context preview. Voice API keys are never logged.
+
+Provider detection uses the URI host and exact provider-domain boundaries; lookalike domains are classified as unknown external targets.
+
+### 🧹 Memory purge
+
+From **MEMORY**, **PURGER LES DONNÉES LOCALES** removes chat history, local notes and transcripts, then clears active history, sightings and the memory cache. A note selected from an external vault is preserved; it remains active and may be read again in future requests.
+
+### ✍️ Prompt and memory readability
+
+The **PROMPTS** and **MEMORY** editors wrap long lines, preserve line breaks, and color Markdown headings, quotes, and lists. Formatting is visual only; applied and saved content remains plain text.
 
 ---
 

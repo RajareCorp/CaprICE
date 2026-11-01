@@ -169,6 +169,7 @@ namespace CaprICE.UI
                     pnlMessageList.Controls.RemoveAt(0);
                     oldControl.Dispose();
                 }
+
                 if (currentChatData == null) return;
 
                 int topOffset = 0;
@@ -241,6 +242,18 @@ namespace CaprICE.UI
             {
                 pnlMessageList.ResumeLayout();
             }
+        }
+
+        private void ClearChatDrawerCache()
+        {
+            currentChatData = new SavedChatData
+            {
+                At = DateTime.Now.ToString("o"),
+                Messages = new List<ChatMessageData>(),
+                Seen = new List<SightingData>()
+            };
+            currentTranscripts.Clear();
+            RenderMessageCards();
         }
 
         private void AddSectionHeader(string text, Color color, ref int topOffset)

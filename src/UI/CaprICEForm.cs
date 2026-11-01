@@ -79,7 +79,7 @@ namespace CaprICE.UI
 
         // Drawers
         private Panel pnlMemoryDrawer;
-        private TextBox txtMemoryEditor;
+        private RichTextBox txtMemoryEditor;
 
         private Panel pnlPromptDrawer;
 
@@ -331,7 +331,7 @@ namespace CaprICE.UI
 
         public static bool PromptConfirmation(string title, string content, List<string> warnings)
         {
-            if (Instance == null || Instance.IsDisposed) return true;
+            if (Instance == null || Instance.IsDisposed || !Instance.IsHandleCreated) return false;
 
             bool approved = false;
             Instance.Invoke((Action)delegate

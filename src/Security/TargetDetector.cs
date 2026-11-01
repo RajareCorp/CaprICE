@@ -1,29 +1,66 @@
+using System;
+
 namespace CaprICE.Security
 {
-    /// <summary>Classe une URL : locale ou externe, et fournisseur IA reconnu.</summary>
+    /// <summary>Classe une URL à partir de son URI et de son hôte réel.</summary>
     public static class TargetDetector
     {
         public static bool IsUrlExternal(string url)
         {
-            if (string.IsNullOrEmpty(url)) return false;
-            return !url.Contains("127.0.0.1") && !url.Contains("localhost");
+            Uri uri;
+            if (!Uri.TryCreate(url, UriKind.Absolute, out uri)) return true;
+
+            string host = uri.Host.TrimEnd('.').ToLowerInvariant();
+            return !uri.IsLoopback
+                && host != "localhost"
+                && !host.EndsWith(".localhost", StringComparison.Ordinal);
         }
 
         public static string DetectTarget(string url)
         {
-            if (string.IsNullOrEmpty(url)) return "Inconnu";
-            string lower = url.ToLowerInvariant();
-            if (lower.Contains("11434") || lower.Contains("/api/chat") || lower.Contains("/api/tags")) return "Ollama (Local)";
-            if (lower.Contains("127.0.0.1") || lower.Contains("localhost")) return "Serveur Local";
-            if (lower.Contains("api.openai.com")) return "OpenAI (Cloud)";
-            if (lower.Contains("api.anthropic.com")) return "Anthropic Claude (Cloud)";
-            if (lower.Contains("deepseek.com")) return "DeepSeek (Cloud)";
-            if (lower.Contains("googleapis.com")) return "Google Gemini (Cloud)";
-            if (lower.Contains("nvidia.com")) return "Nvidia NIM (Cloud)";
-            if (lower.Contains("openrouter.ai")) return "OpenRouter (Cloud)";
-            if (lower.Contains("elevenlabs.io")) return "ElevenLabs Voice (Cloud)";
-            if (lower.Contains("github.com")) return "GitHub";
-            return "API Externe";
+            Uri uri;
+            if (!Uri.TryCreate(url, UriKind.Absolute, out uri)) return "Cible inconnue";
+
+            string host = uri.Host.TrimEnd('.').ToLowerInvariant();
+            if (!IsUrlExternal(url))
+            {
+                if (uri.Port == 11434) return "Ollama (Local)";
+                if (uri.Port == 1234) return "LM Studio (Local)";
+                if (uri.Port == 1337) return "Jan (Local)";
+                if (uri.Port == 5001) return "KoboldCpp (Local)";
+                if (uri.Port == 8080) return "llama.cpp (Local)";
+                return "Serveur local" + (uri.IsDefaultPort ? "" : " :" + uri.Port);
+            }
+
+            if (IsHostOrSubdomain(host, "api.openai.com")) return "OpenAI (Cloud)";
+            if (IsHostOrSubdomain(host, "api.anthropic.com")) return "Anthropic Claude (Cloud)";
+            if (IsHostOrSubdomain(host, "api.deepseek.com")) return "DeepSeek (Cloud)";
+            if (IsHostOrSubdomain(host, "generativelanguage.googleapis.com")) return "Google Gemini (Cloud)";
+            if (IsHostOrSubdomain(host, "integrate.api.nvidia.com")) return "NVIDIA NIM (Cloud)";
+            if (IsHostOrSubdomain(host, "openrouter.ai")) return "OpenRouter (Cloud)";
+            if (IsHostOrSubdomain(host, "elevenlabs.io")) return "ElevenLabs Voice (Cloud)";
+            if (IsHostOrSubdomain(host, "github.com")) return "GitHub";
+            return "API externe (" + host + ")";
+        }
+
+        public static string SanitizeUrl(string url)
+        {
+            Uri uri;
+            if (!Uri.TryCreate(url, UriKind.Absolute, out uri)) return "URI invalide";
+
+            UriBuilder safe = new UriBuilder(uri)
+            {
+                UserName = string.Empty,
+                Password = string.Empty,
+                Query = string.Empty,
+                Fragment = string.Empty
+            };
+            return safe.Uri.AbsoluteUri.TrimEnd('/');
+        }
+
+        private static bool IsHostOrSubdomain(string host, string domain)
+        {
+            return host == domain || host.EndsWith("." + domain, StringComparison.Ordinal);
         }
     }
 }

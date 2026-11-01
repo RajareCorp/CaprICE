@@ -7,9 +7,9 @@ namespace CaprICE.UI
 {
     public partial class CaprICEForm
     {
-        private TextBox txtPersonality;
-        private TextBox txtSafety;
-        private TextBox txtMachinery;
+        private RichTextBox txtPersonality;
+        private RichTextBox txtSafety;
+        private RichTextBox txtMachinery;
 
         private void InitializePromptDrawer()
         {
@@ -31,24 +31,24 @@ namespace CaprICE.UI
             {
                 ColumnCount = 1,
                 RowCount = 6,
-                Height = 378,
+                Height = 588,
                 BackColor = NeonTheme.Well,
                 Location = Point.Empty
             };
             content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
-            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 120F));
-            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
-            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 90F));
-            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
-            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 90F));
+            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 190F));
+            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 145F));
+            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 145F));
 
             Label lblPersonality = CreateSectionLabel("1. PERSONALITY (Personnage, Ton, Lore)");
-            txtPersonality = CreateCodeTextBox();
+            txtPersonality = CreateCodeTextBox(NeonTheme.Rose);
             Label lblSafety = CreateSectionLabel("2. SAFETY (Sécurité, Limites, Comportement)");
-            txtSafety = CreateCodeTextBox();
+            txtSafety = CreateCodeTextBox(NeonTheme.StatusWarning);
             Label lblMachinery = CreateSectionLabel("3. MACHINERY (Contraintes de Format & Voice)");
-            txtMachinery = CreateCodeTextBox();
+            txtMachinery = CreateCodeTextBox(NeonTheme.Cyan);
 
             content.Controls.Add(lblPersonality, 0, 0);
             content.Controls.Add(txtPersonality, 0, 1);
@@ -98,18 +98,10 @@ namespace CaprICE.UI
             };
         }
 
-        private TextBox CreateCodeTextBox()
+        private RichTextBox CreateCodeTextBox(Color accent)
         {
-            return new TextBox
-            {
-                Multiline = true,
-                ScrollBars = ScrollBars.Vertical,
-                BackColor = NeonTheme.Field,
-                ForeColor = NeonTheme.White,
-                Font = NeonTheme.FontMono,
-                BorderStyle = BorderStyle.None,
-                Dock = DockStyle.Fill
-            };
+            ReadableTextEditor editor = new ReadableTextEditor(accent) { Dock = DockStyle.Fill };
+            return editor;
         }
 
         private void LoadOriginalsIntoFields()

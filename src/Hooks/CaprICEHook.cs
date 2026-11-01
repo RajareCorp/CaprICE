@@ -91,6 +91,11 @@ namespace CaprICE.Hooks
             return false;
         }
 
+        public static string GetActiveMemoryPath()
+        {
+            return BrainReflection.GetActiveMemoryPath();
+        }
+
         private static void PatchBrain(Harmony harmony, Type brainType)
         {
             if (brainType == null) return;
@@ -131,6 +136,14 @@ namespace CaprICE.Hooks
                     postfix: Hook(typeof(BrainHooks), "OnBrainAskPostfix"));
             }
 
+            MethodInfo think = brainType.GetMethod("Think", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (think != null)
+            {
+                harmony.Patch(think,
+                    prefix: Hook(typeof(BrainHooks), "OnBrainThinkPrefix"),
+                    finalizer: Hook(typeof(BrainHooks), "OnBrainThinkFinalizer"));
+            }
+
             // Brain.Log(string url, long took, string what) -> journalisation des endpoints
             MethodInfo log = brainType.GetMethod("Log", AnyStatic);
             if (log != null)
@@ -146,7 +159,9 @@ namespace CaprICE.Hooks
             MethodInfo open = voiceType.GetMethod("Open", AnyStatic);
             if (open != null)
             {
-                harmony.Patch(open, postfix: Hook(typeof(VoiceHooks), "OnVoiceOpenPostfix"));
+                harmony.Patch(open,
+                    prefix: Hook(typeof(VoiceHooks), "OnVoiceOpenPrefix"),
+                    postfix: Hook(typeof(VoiceHooks), "OnVoiceOpenPostfix"));
             }
         }
 

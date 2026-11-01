@@ -33,7 +33,7 @@ namespace CaprICE.Security
                 foreach (string name in SplitList(SecurityPolicy.CustomNames, 2))
                 {
                     if (NameRegex(name).IsMatch(payload))
-                        violations.Add("Nom / Prénom Identifié (" + name + ")");
+                        violations.Add("Nom / Prénom personnalisé");
                 }
             }
 
@@ -43,7 +43,7 @@ namespace CaprICE.Security
                 foreach (string addr in SplitList(SecurityPolicy.CustomAddresses, 3))
                 {
                     if (AddressRegex(addr).IsMatch(payload))
-                        violations.Add("Adresse Personnelle (" + addr + ")");
+                        violations.Add("Adresse personnelle personnalisée");
                 }
             }
 

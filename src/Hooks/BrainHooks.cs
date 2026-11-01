@@ -1,38 +1,29 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text.RegularExpressions;
 using CaprICE.Security;
 using CaprICE.UI;
 
 namespace CaprICE.Hooks
 {
-    /// <summary>Callbacks Harmony appliqués à CapriDesktop.Brain (Create, Ask, Log).</summary>
+    /// <summary>Callbacks Harmony appliqués aux requêtes réseau et prompts de Capri.</summary>
     public static class BrainHooks
     {
-        // --- Brain.Create : blocage des connexions + proxy amont ---
+        [ThreadStatic] private static string outgoingPreview;
+        [ThreadStatic] private static string dlpBlockReason;
+
         public static bool OnBrainCreatePrefix(string url, int timeout, ref HttpWebRequest __result)
         {
-            List<string> violations;
-            string reason;
-            string dummy = "";
-            InterceptStatus status = SecurityPolicy.Evaluate(url, ref dummy, out violations, out reason);
-
-            if (status == InterceptStatus.Blocked)
+            if (!string.IsNullOrEmpty(dlpBlockReason))
             {
-                InterceptEvent ev = new InterceptEvent
-                {
-                    Url = url,
-                    TargetName = TargetDetector.DetectTarget(url),
-                    IsExternal = TargetDetector.IsUrlExternal(url),
-                    Method = "HTTP CONNECT",
-                    Status = InterceptStatus.Blocked,
-                    Reason = reason
-                };
-                Report(ev);
-
-                throw new WebException("[CaprICE Security Guard] Outbound connection blocked: " + reason);
+                string reason = dlpBlockReason;
+                dlpBlockReason = null;
+                throw new WebException("[CaprICE Security Guard] Outbound request blocked by DLP: " + reason);
             }
 
+            if (!AuthorizeConnection(url, "HTTP CONNECT"))
+                throw new WebException("[CaprICE Security Guard] Outbound connection blocked.");
             return true;
         }
 
@@ -40,64 +31,58 @@ namespace CaprICE.Hooks
         {
             if (__result != null && !string.IsNullOrEmpty(CaprICEHook.CustomProxyUrl))
             {
-                try
-                {
-                    __result.Proxy = new WebProxy(CaprICEHook.CustomProxyUrl);
-                }
-                catch { }
+                try { __result.Proxy = new WebProxy(CaprICEHook.CustomProxyUrl); }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine("Unable to apply CaprICE proxy: " + ex.Message); }
             }
         }
 
-        // --- Brain.Ask : interception du prompt, DLP, contexte & mémoire ---
         public static bool OnBrainAskPrefix(object __instance, ref string text)
         {
             if (string.IsNullOrEmpty(text)) return true;
 
             BrainReflection.ApplyCustomSystemPrompt(__instance, CaprICEHook.CustomSystemPrompt);
-
             string initialText = text;
-            List<string> violations;
-            string reason;
-
             int turnCount;
             string contextMemoryText = BrainReflection.ExtractContextAndMemory(__instance, out turnCount);
+            string contextForScan = contextMemoryText ?? string.Empty;
 
-            string targetUrl = "https://api.cloud-ai.provider/v1/chat";
-            InterceptStatus status = SecurityPolicy.Evaluate(targetUrl, ref text, out violations, out reason);
+            List<string> violations;
+            string reason;
+            InterceptStatus status = SecurityPolicy.EvaluatePayload(ref text, out violations, out reason);
+            List<string> contextViolations = DlpEngine.Scan(contextForScan);
+            foreach (string violation in contextViolations)
+                if (!violations.Contains(violation)) violations.Add(violation);
 
-            // Vérifie aussi les données sensibles présentes dans le contexte / la mémoire
-            if (!string.IsNullOrEmpty(contextMemoryText))
+            if (contextViolations.Count > 0 && SecurityPolicy.CurrentMode == PolicyMode.EnforceDlp)
             {
-                List<string> memViolations;
-                string memReason;
-                string dummy = contextMemoryText;
-                SecurityPolicy.Evaluate(targetUrl, ref dummy, out memViolations, out memReason);
-                foreach (string v in memViolations)
+                contextMemoryText = DlpEngine.Redact(contextMemoryText);
+                if (SecurityPolicy.MaskDlpInPayloads)
                 {
-                    if (!violations.Contains(v)) violations.Add("En Mémoire : " + v);
+                    status = InterceptStatus.DlpMasked;
+                    reason = "Données sensibles du contexte masquées avant transmission";
+                }
+                else
+                {
+                    status = InterceptStatus.Blocked;
+                    reason = "Bloqué par Politique DLP (donnée sensible dans le contexte)";
                 }
             }
 
+            string targetUrl = BrainReflection.GetTargetUrl(__instance);
             InterceptEvent ev = new InterceptEvent
             {
                 Url = "Capri://Brain/Ask",
-                TargetName = "Prompt & Contexte -> Brain",
-                IsExternal = SecurityPolicy.CurrentMode == PolicyMode.BlockExternal,
+                TargetName = TargetDetector.DetectTarget(targetUrl),
+                IsExternal = TargetDetector.IsUrlExternal(targetUrl),
                 Method = "PROMPT+CTX",
-                RequestPayload = initialText,
+                RequestPayload = SecurityPolicy.CurrentMode == PolicyMode.EnforceDlp
+                    ? DlpEngine.Redact(initialText) : initialText,
                 ContextMemory = contextMemoryText,
                 HistoryTurns = turnCount,
                 Status = status,
                 Reason = reason,
                 DlpMatches = violations
             };
-
-            if (status == InterceptStatus.DlpMasked)
-            {
-                ev.RequestPayload = text; // texte assaini
-                Report(ev);
-                return true;
-            }
 
             if (status == InterceptStatus.Blocked)
             {
@@ -106,24 +91,123 @@ namespace CaprICE.Hooks
                 return false;
             }
 
-            if (status == InterceptStatus.PendingApproval)
-            {
-                string confirmDisplay = "PROMPT ACTUEL :\r\n" + initialText + "\r\n\r\n--- CONTEXTE / MÉMOIRE ENVOYÉ ---\r\n" + (contextMemoryText ?? "(Aucune mémoire additionnelle)");
-                bool approved = CaprICEForm.PromptConfirmation("Transmission IA Externe", confirmDisplay, violations);
-                if (!approved)
-                {
-                    ev.Status = InterceptStatus.Blocked;
-                    ev.Reason = "Refusé par l'utilisateur";
-                    Report(ev);
-                    text = "Requête refusée par l'utilisateur dans CaprICE.";
-                    return false;
-                }
-                ev.Status = InterceptStatus.Allowed;
-                ev.Reason = "Approuvé manuellement par l'utilisateur";
-            }
-
             Report(ev);
             return true;
+        }
+
+        public static bool OnBrainThinkPrefix(object __instance, object[] __args)
+        {
+            if (__args == null || __args.Length < 2) return true;
+            string targetUrl = BrainReflection.GetTargetUrl(__instance);
+            if (!TargetDetector.IsUrlExternal(targetUrl)) return true;
+
+            bool enforce = SecurityPolicy.CurrentMode == PolicyMode.EnforceDlp;
+            if (enforce)
+            {
+                System.Collections.IList messages = __args[1] as System.Collections.IList;
+                System.Collections.IList safeMessages = BrainReflection.CloneOutgoingMessages(__args[1]) as System.Collections.IList;
+                if (messages != null && safeMessages != null && messages.Count == safeMessages.Count)
+                    for (int i = 0; i < messages.Count; i++) messages[i] = safeMessages[i];
+            }
+            string parts = __args.Length > 4 ? __args[4] as string : null;
+            List<string> partViolations = string.IsNullOrEmpty(parts)
+                ? new List<string>() : DlpEngine.Scan(RemoveImageData(parts));
+
+            List<string> violations;
+            string preview = BrainReflection.PrepareOutgoingMessages(__args[1], enforce, out violations);
+            foreach (string violation in partViolations)
+                if (!violations.Contains(violation)) violations.Add(violation);
+            if (!string.IsNullOrEmpty(parts))
+                preview += "\r\n[Payload multimodal joint ; texte inspecté, images non analysées par OCR]";
+            outgoingPreview = preview;
+            if (violations.Count == 0) return true;
+
+            InterceptStatus status = InterceptStatus.Allowed;
+            string reason = "Données sensibles détectées dans le contexte sortant (mode surveillance)";
+            if (enforce)
+            {
+                if (partViolations.Count > 0)
+                {
+                    status = InterceptStatus.Blocked;
+                    reason = "Bloqué par Politique DLP (instruction multimodale non masquée pour préserver le format)";
+                    dlpBlockReason = reason;
+                }
+                else if (SecurityPolicy.MaskDlpInPayloads)
+                {
+                    status = InterceptStatus.DlpMasked;
+                    reason = "Données sensibles masquées dans le contexte complet avant transmission";
+                }
+                else
+                {
+                    status = InterceptStatus.Blocked;
+                    reason = "Bloqué par Politique DLP (donnée sensible dans le contexte complet)";
+                    dlpBlockReason = reason;
+                }
+            }
+
+            Report(new InterceptEvent
+            {
+                Url = TargetDetector.SanitizeUrl(targetUrl),
+                TargetName = TargetDetector.DetectTarget(targetUrl),
+                IsExternal = true,
+                Method = "DLP CONTEXT",
+                ContextMemory = preview,
+                Status = status,
+                Reason = reason,
+                DlpMatches = violations
+            });
+            return true;
+        }
+
+        private static string RemoveImageData(string parts)
+        {
+            string withoutSourceData = Regex.Replace(parts,
+                "(\"data\"\\s*:\\s*\")[^\"]*(\")", "$1[IMAGE_DATA]$2",
+                RegexOptions.IgnoreCase);
+            return Regex.Replace(withoutSourceData,
+                "(\"url\"\\s*:\\s*\")data:image/[^;\" ]+;base64,[^\"]*(\")",
+                "$1[IMAGE_DATA]$2", RegexOptions.IgnoreCase);
+        }
+
+        public static Exception OnBrainThinkFinalizer(Exception __exception)
+        {
+            outgoingPreview = null;
+            dlpBlockReason = null;
+            return __exception;
+        }
+
+        public static bool AuthorizeConnection(string url, string operation)
+        {
+            string reason;
+            InterceptStatus status = SecurityPolicy.EvaluateConnection(url, out reason);
+            if (status == InterceptStatus.PendingApproval)
+            {
+                string content = "Cible : " + TargetDetector.DetectTarget(url)
+                    + "\r\nURL : " + TargetDetector.SanitizeUrl(url)
+                    + "\r\n\r\n--- CONTEXTE SORTANT ---\r\n"
+                    + (string.IsNullOrEmpty(outgoingPreview) ? "(Aucun aperçu de prompt disponible)" : outgoingPreview);
+                if (!CaprICEForm.PromptConfirmation("Connexion externe", content, new List<string>()))
+                {
+                    status = InterceptStatus.Blocked;
+                    reason = "Refusé par l'utilisateur";
+                }
+                else
+                {
+                    status = InterceptStatus.Allowed;
+                    reason = "Connexion approuvée manuellement";
+                }
+            }
+
+            Report(new InterceptEvent
+            {
+                Url = TargetDetector.SanitizeUrl(url),
+                TargetName = TargetDetector.DetectTarget(url),
+                IsExternal = TargetDetector.IsUrlExternal(url),
+                Method = operation,
+                Status = status,
+                Reason = reason
+            });
+            return status != InterceptStatus.Blocked;
         }
 
         public static void OnBrainAskPostfix(string __result)
@@ -143,16 +227,14 @@ namespace CaprICE.Hooks
             CaprICEForm.NotifyEvent(ev);
         }
 
-        // --- Brain.Log : suivi des endpoints appelés ---
         public static void OnBrainLogPrefix(string url, long took, string what)
         {
             if (string.IsNullOrEmpty(url)) return;
-
             bool isError = took < 0 && (what ?? "").IndexOf("error", StringComparison.OrdinalIgnoreCase) >= 0;
 
             InterceptEvent ev = new InterceptEvent
             {
-                Url = url,
+                Url = TargetDetector.SanitizeUrl(url),
                 TargetName = TargetDetector.DetectTarget(url),
                 IsExternal = TargetDetector.IsUrlExternal(url),
                 Method = "ENDPOINT",
@@ -164,19 +246,16 @@ namespace CaprICE.Hooks
             Report(ev);
         }
 
-        /// <summary>Affiche l'événement dans l'interface et l'écrit dans le journal d'audit.</summary>
         private static void Report(InterceptEvent ev)
         {
             CaprICEForm.NotifyEvent(ev);
             AuditLog.Write(ev);
         }
-        
+
         public static void OnBrainGreetingPostfix(ref string __result)
         {
             if (!string.IsNullOrEmpty(__result))
-            {
                 __result = "[I.C.E Initialized] " + __result;
-            }
         }
     }
 }

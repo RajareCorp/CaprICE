@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text;
+using CaprICE.Hooks;
 using CaprICE.Services;
 
 namespace CaprICE
@@ -8,6 +9,9 @@ namespace CaprICE
     {
         public static string GetMemoryFilePath()
         {
+            string activePath = CaprICEHook.GetActiveMemoryPath();
+            if (!string.IsNullOrWhiteSpace(activePath)) return activePath;
+
             string localCapri = CapriDataPaths.DirectoryPath;
 
             string candidateMem = Path.Combine(localCapri, "memories.md");

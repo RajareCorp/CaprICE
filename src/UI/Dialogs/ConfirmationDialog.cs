@@ -30,7 +30,7 @@ namespace CaprICE.UI
 
                 Label lblWarn = new Label
                 {
-                    Text = "TRANSMISSION IA EXTERNE // CONFIRMATION REQUISE",
+                    Text = "CONNEXION EXTERNE // CONFIRMATION REQUISE",
                     Font = NeonTheme.FontTitle,
                     ForeColor = NeonTheme.Rose,
                     Location = new Point(22, 16),
@@ -48,7 +48,7 @@ namespace CaprICE.UI
                     ForeColor = NeonTheme.White,
                     Font = NeonTheme.FontMono,
                     BorderStyle = BorderStyle.None,
-                    Text = "Cible : Cloud AI Externe\r\n\r\n--- CONTENU DU PROMPT & CONTEXTE ---\r\n" + content
+                    Text = "Vérifiez la cible et le contenu avant d'autoriser.\r\n\r\n" + content
                 };
 
                 Button btnAllow = new Button

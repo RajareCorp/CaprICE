@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace CaprICE.Security
 {
     /// <summary>
-    /// Réglages courants (mode, règles DLP actives, données perso) et décision <see cref="Evaluate"/>.
+    /// Réglages courants et décisions distinctes pour le contenu (<see cref="EvaluatePayload"/>) et le réseau (<see cref="EvaluateConnection"/>).
     /// La détection est dans <see cref="DlpEngine"/>, la persistance dans <see cref="SettingsStore"/>.
     /// </summary>
     public static class SecurityPolicy
@@ -44,23 +44,12 @@ namespace CaprICE.Security
         public static bool SaveSettings(out string error) { return SettingsStore.Save(out error); }
         public static void LoadSettings() { SettingsStore.Load(); }
 
-        public static InterceptStatus Evaluate(string url, ref string payload, out List<string> violations, out string reason)
+        public static InterceptStatus EvaluatePayload(ref string payload, out List<string> violations, out string reason)
         {
             violations = new List<string>();
             reason = string.Empty;
-            bool isExternal = TargetDetector.IsUrlExternal(url);
-
-            // 1. Mode Strict Local
-            if (CurrentMode == PolicyMode.BlockExternal && isExternal)
-            {
-                reason = "Bloqué par Politique Strict Local (IA Cloud externe interdite)";
-                return InterceptStatus.Blocked;
-            }
-
-            // 2. Analyse DLP
             violations = DlpEngine.Scan(payload);
 
-            // 3. Application de la règle DLP
             if (violations.Count > 0 && CurrentMode == PolicyMode.EnforceDlp)
             {
                 if (MaskDlpInPayloads)
@@ -74,10 +63,22 @@ namespace CaprICE.Security
                 return InterceptStatus.Blocked;
             }
 
-            // 4. Confirmation manuelle
-            if (CurrentMode == PolicyMode.AskConfirmation && isExternal)
+            reason = violations.Count > 0 ? "Données sensibles détectées (mode surveillance)" : "Aucune donnée sensible détectée";
+            return InterceptStatus.Allowed;
+        }
+
+        public static InterceptStatus EvaluateConnection(string url, out string reason)
+        {
+            bool isExternal = TargetDetector.IsUrlExternal(url);
+            if (isExternal && CurrentMode == PolicyMode.BlockExternal)
             {
-                reason = "En attente d'approbation manuelle";
+                reason = "Bloqué par Politique Strict Local (connexion externe interdite)";
+                return InterceptStatus.Blocked;
+            }
+
+            if (isExternal && CurrentMode == PolicyMode.AskConfirmation)
+            {
+                reason = "Approbation requise avant la connexion externe";
                 return InterceptStatus.PendingApproval;
             }
 
