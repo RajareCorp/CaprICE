@@ -12,6 +12,10 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $capriceDir = $PSScriptRoot
+$appIcon = Join-Path $capriceDir 'Capr-ICE.ico'
+if (-not (Test-Path -LiteralPath $appIcon)) {
+    throw "Icône de l'application introuvable : $appIcon"
+}
 
 # ---------- Compilateur C# ----------
 if (-not $Compiler) {
@@ -58,6 +62,7 @@ $cscArgs = @(
     '/reference:System.Core.dll',
     '/reference:System.Drawing.dll',
     '/reference:System.Windows.Forms.dll',
+    ('/win32icon:' + $appIcon),
     ('/reference:' + $harmony),
     ('/out:' + $outputExe)
 ) + $sources

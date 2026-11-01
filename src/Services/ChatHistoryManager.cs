@@ -35,7 +35,7 @@ namespace CaprICE.Services
     {
         public static string GetChatFilePath()
         {
-            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "chat.json");
+            return Path.Combine(CapriDataPaths.DirectoryPath, "chat.json");
         }
 
         public static SavedChatData LoadData()
@@ -56,7 +56,11 @@ namespace CaprICE.Services
                 using (FileStream fs = File.OpenRead(path))
                 {
                     var serializer = new DataContractJsonSerializer(typeof(SavedChatData));
-                    return (SavedChatData)serializer.ReadObject(fs);
+                    SavedChatData data = (SavedChatData)serializer.ReadObject(fs);
+                    if (data == null) data = new SavedChatData();
+                    if (data.Messages == null) data.Messages = new List<ChatMessageData>();
+                    if (data.Seen == null) data.Seen = new List<SightingData>();
+                    return data;
                 }
             }
             catch
@@ -76,6 +80,7 @@ namespace CaprICE.Services
             try
             {
                 string path = GetChatFilePath();
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
                 using (MemoryStream ms = new MemoryStream())
                 {
                     var serializer = new DataContractJsonSerializer(typeof(SavedChatData));

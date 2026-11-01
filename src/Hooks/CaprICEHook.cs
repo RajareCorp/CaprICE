@@ -1,8 +1,6 @@
 using System;
-using System.Collections;
 using System.Reflection;
 using System.Windows.Forms;
-using System.Linq;
 using HarmonyLib;
 using CaprICE.Services;
 
@@ -78,23 +76,16 @@ namespace CaprICE.Hooks
         {
             try
             {
-                Type brainType = CapriAssembly?.GetType("CapriDesktop.Brain") 
-                    ?? AppDomain.CurrentDomain.GetAssemblies()
-                        .SelectMany(a => a.GetTypes())
-                        .FirstOrDefault(t => t.FullName == "CapriDesktop.Brain");
-
+                Type brainType = CapriAssembly != null ? CapriAssembly.GetType("CapriDesktop.Brain") : null;
                 if (brainType == null) return false;
 
-                FieldInfo histField = brainType.GetField("history", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-                if (histField != null)
+                if (brainInstance == null)
                 {
-                    var histList = histField.GetValue(brainInstance) as IList;
-                    if (histList != null)
-                    {
-                        histList.Clear();
-                        return true;
-                    }
+                    FieldInfo keeperField = brainType.GetField("Keeper", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+                    if (keeperField != null) brainInstance = keeperField.GetValue(null);
                 }
+
+                return BrainReflection.ClearBrainHistory(brainInstance);
             }
             catch { }
             return false;

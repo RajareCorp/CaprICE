@@ -31,7 +31,10 @@ caprice/
    │  ├─ PersonaHooks.cs      Brain.Persona
    │  └─ BrainReflection.cs   Accès par réflexion à l'historique et à la mémoire
    ├─ Services/
+   │  ├─ CapriDataPaths.cs    Chemins de données partagés de Capri (%LocalAppData%)
+   │  ├─ ChatHistoryManager.cs Lecture/écriture de chat.json
    │  ├─ MemoryManager.cs     Lecture/écriture de memories.md / me.md
+   │  ├─ TranscriptManager.cs Lecture/suppression des journaux de transcripts
    │  └─ PersonaReader.cs     Lit le prompt système d'origine de Capri
    └─ UI/
       ├─ CaprICEForm.cs       Cœur de la fenêtre (champs, construction, peinture)

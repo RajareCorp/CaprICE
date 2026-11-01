@@ -1,63 +1,76 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using CaprICE.Hooks;
-using CaprICE.Security;
-using CaprICE.Services;
 
 namespace CaprICE.UI
 {
     public partial class CaprICEForm
     {
-        // --- TIROIR 1 : Éditeur de Memory.md ---
+        private void ShowMemoryDrawer()
+        {
+            try
+            {
+                txtMemoryEditor.Text = MemoryManager.ReadMemory();
+                SwitchWorkspaceView(pnlMemoryDrawer, btnNavMemory);
+            }
+            catch (IOException ex)
+            {
+                MessageBox.Show("Impossible de lire la mémoire : " + ex.Message,
+                    "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                MessageBox.Show("Accès refusé lors de la lecture de la mémoire : " + ex.Message,
+                    "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void InitializeMemoryDrawer()
         {
             pnlMemoryDrawer = new Panel
             {
-                Dock = DockStyle.Right,
-                Width = 500,
+                Dock = DockStyle.Fill,
                 BackColor = NeonTheme.Well,
                 Visible = false,
                 Padding = new Padding(20)
             };
 
-            Label lblTitle = new Label
-            {
-                Text = "ÉDITEUR DE MÉMOIRE (memories.md / me.md)",
-                Font = NeonTheme.FontTitle,
-                ForeColor = NeonTheme.Cyan,
-                Dock = DockStyle.Top,
-                Height = 36
-            };
-
             txtMemoryEditor = new TextBox
             {
-                Dock = DockStyle.Fill,
                 Multiline = true,
                 ScrollBars = ScrollBars.Vertical,
                 BackColor = NeonTheme.Field,
                 ForeColor = NeonTheme.White,
-                Font = new Font("Consolas", 10F, FontStyle.Regular),
+                Font = NeonTheme.FontMono,
                 BorderStyle = BorderStyle.None
             };
 
             Button btnSave = CyberControls.Button("SAUVEGARDER LA MÉMOIRE", 240, 36, NeonTheme.DeepEdge, NeonTheme.Cyan);
-            btnSave.Dock = DockStyle.Bottom;
             btnSave.Click += (s, e) =>
             {
-                MemoryManager.SaveMemory(txtMemoryEditor.Text);
-                MessageBox.Show("Mémoire sauvegardée avec succès !", "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                try
+                {
+                    MemoryManager.SaveMemory(txtMemoryEditor.Text);
+                    MessageBox.Show("Mémoire sauvegardée avec succès !", "CaprICE",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (IOException ex)
+                {
+                    MessageBox.Show("Impossible de sauvegarder la mémoire : " + ex.Message,
+                        "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    MessageBox.Show("Accès refusé lors de la sauvegarde de la mémoire : " + ex.Message,
+                        "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             };
-            Button btnClose = CyberControls.Button("FERMER [X]", 120, 32, NeonTheme.Edge, NeonTheme.Rose);
-            btnClose.Dock = DockStyle.Bottom;
+            Button btnClose = CyberControls.Button("FERMER", 120, 32, NeonTheme.Edge, NeonTheme.Rose);
+            btnClose.Click += (s, e) => SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
 
-            pnlMemoryDrawer.Controls.Add(txtMemoryEditor);
-            pnlMemoryDrawer.Controls.Add(lblTitle);
-            pnlMemoryDrawer.Controls.Add(btnSave);
-            pnlMemoryDrawer.Controls.Add(btnClose);
+            pnlMemoryDrawer.Controls.Add(BuildDrawerLayout(
+                "ÉDITEUR DE MÉMOIRE (memories.md / me.md)", NeonTheme.Cyan, txtMemoryEditor, btnSave, btnClose));
         }
     }
 }

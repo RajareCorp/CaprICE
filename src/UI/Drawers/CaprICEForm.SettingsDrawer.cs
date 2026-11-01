@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
-using CaprICE.Hooks;
 using CaprICE.Security;
-using CaprICE.Services;
 
 namespace CaprICE.UI
 {
@@ -16,31 +10,41 @@ namespace CaprICE.UI
         {
             pnlSettingsDrawer = new Panel
             {
-                Dock = DockStyle.Right,
-                Width = 480,
+                Dock = DockStyle.Fill,
                 BackColor = NeonTheme.Well,
                 Visible = false,
                 Padding = new Padding(20)
             };
 
-            Label lblSetTitle = new Label
+            Panel pnlContent = new Panel
             {
-                Text = "PARAMÈTRES DE CONFIDENTIALITÉ & DLP",
-                Font = NeonTheme.FontTitle,
-                ForeColor = NeonTheme.Rose,
-                Dock = DockStyle.Top,
-                Height = 36
+                AutoScroll = true,
+                BackColor = NeonTheme.Well
             };
 
-            Panel pnlContent = new Panel { Dock = DockStyle.Fill, AutoScroll = true };
+            TableLayoutPanel content = new TableLayoutPanel
+            {
+                ColumnCount = 1,
+                RowCount = 6,
+                Height = 447,
+                BackColor = NeonTheme.Well,
+                Location = Point.Empty
+            };
+            content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 295F));
+            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+            content.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
 
             Label lblDesc = new Label
             {
                 Text = "Cochez les éléments à masquer automatiquement dans les requêtes cloud :",
                 Font = NeonTheme.FontSmall,
                 ForeColor = NeonTheme.Faint,
-                Dock = DockStyle.Top,
-                Height = 28
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
             cbApiKeys = CyberControls.Check("Clés API & Tokens secrets", SecurityPolicy.MaskApiKeys, 0);
@@ -53,7 +57,7 @@ namespace CaprICE.UI
             cbCards = CyberControls.Check("Numéros de carte bancaire", SecurityPolicy.MaskCreditCards, 224);
             cbNames = CyberControls.Check("Noms & Prénoms personnalisés", SecurityPolicy.MaskCustomNames, 256);
 
-            Panel pnlChecks = new Panel { Dock = DockStyle.Top, Height = 295 };
+            Panel pnlChecks = new Panel { Dock = DockStyle.Fill, Height = 295, BackColor = NeonTheme.Well };
             pnlChecks.Controls.AddRange(new Control[] {
                 cbApiKeys, cbPasswords, cbPhones, cbIps, cbAddresses, cbUserPaths, cbEmails, cbCards, cbNames
             });
@@ -63,60 +67,54 @@ namespace CaprICE.UI
                 Text = "NOMS & PRÉNOMS À MASQUER (séparés par virgules) :",
                 Font = NeonTheme.FontBadge,
                 ForeColor = NeonTheme.Cyan,
-                Dock = DockStyle.Top,
-                Height = 26
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
-            txtCustomNames = new TextBox
-            {
-                Text = SecurityPolicy.CustomNames,
-                Font = NeonTheme.FontSubtitle,
-                ForeColor = NeonTheme.White,
-                BackColor = NeonTheme.Field,
-                BorderStyle = BorderStyle.FixedSingle,
-                Dock = DockStyle.Top,
-                Height = 28
-            };
+            txtCustomNames = CreateSettingsTextBox(SecurityPolicy.CustomNames);
 
             Label lblCustomAddrs = new Label
             {
                 Text = "ADRESSES PRIVÉES / VILLES (séparées par virgules) :",
                 Font = NeonTheme.FontBadge,
                 ForeColor = NeonTheme.Cyan,
-                Dock = DockStyle.Top,
-                Height = 26
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
-            txtCustomAddresses = new TextBox
+            txtCustomAddresses = CreateSettingsTextBox(SecurityPolicy.CustomAddresses);
+
+            content.Controls.Add(lblDesc, 0, 0);
+            content.Controls.Add(pnlChecks, 0, 1);
+            content.Controls.Add(lblCustomNames, 0, 2);
+            content.Controls.Add(txtCustomNames, 0, 3);
+            content.Controls.Add(lblCustomAddrs, 0, 4);
+            content.Controls.Add(txtCustomAddresses, 0, 5);
+            pnlContent.Controls.Add(content);
+            pnlContent.SizeChanged += (s, e) => content.Width = pnlContent.ClientSize.Width;
+
+            btnSaveSettings = CyberControls.Button("ENREGISTRER LES PARAMÈTRES", 260, 36, NeonTheme.DeepEdge, NeonTheme.Cyan);
+            btnSaveSettings.Click += (s, e) => SaveSettingsFromUi();
+
+            Button btnCloseSettings = CyberControls.Button("FERMER", 160, 32, NeonTheme.Edge, NeonTheme.Rose);
+            btnCloseSettings.Click += (s, e) => SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
+
+            pnlSettingsDrawer.Controls.Add(BuildDrawerLayout(
+                "PARAMÈTRES DE CONFIDENTIALITÉ & DLP", NeonTheme.Rose, pnlContent,
+                btnSaveSettings, btnCloseSettings));
+        }
+
+        private TextBox CreateSettingsTextBox(string text)
+        {
+            return new TextBox
             {
-                Text = SecurityPolicy.CustomAddresses,
+                Text = text,
                 Font = NeonTheme.FontSubtitle,
                 ForeColor = NeonTheme.White,
                 BackColor = NeonTheme.Field,
                 BorderStyle = BorderStyle.FixedSingle,
-                Dock = DockStyle.Top,
-                Height = 28
+                Dock = DockStyle.Fill
             };
-
-            btnSaveSettings = CyberControls.Button("ENREGISTRER LES PARAMÈTRES", 260, 36, NeonTheme.DeepEdge, NeonTheme.Cyan);
-            btnSaveSettings.Dock = DockStyle.Bottom;
-            btnSaveSettings.Click += (s, e) => SaveSettingsFromUi();
-
-            Button btnCloseSettings = CyberControls.Button("FERMER LE VOLET [X]", 160, 32, NeonTheme.Edge, NeonTheme.Rose);
-            btnCloseSettings.Dock = DockStyle.Bottom;
-            btnCloseSettings.Click += (s, e) => ToggleSettingsDrawer();
-
-            pnlContent.Controls.Add(txtCustomAddresses);
-            pnlContent.Controls.Add(lblCustomAddrs);
-            pnlContent.Controls.Add(txtCustomNames);
-            pnlContent.Controls.Add(lblCustomNames);
-            pnlContent.Controls.Add(pnlChecks);
-            pnlContent.Controls.Add(lblDesc);
-
-            pnlSettingsDrawer.Controls.Add(pnlContent);
-            pnlSettingsDrawer.Controls.Add(btnSaveSettings);
-            pnlSettingsDrawer.Controls.Add(btnCloseSettings);
-            pnlSettingsDrawer.Controls.Add(lblSetTitle);
         }
 
         private void SaveSettingsFromUi()
@@ -134,18 +132,15 @@ namespace CaprICE.UI
             SecurityPolicy.CustomNames = txtCustomNames.Text.Trim();
             SecurityPolicy.CustomAddresses = txtCustomAddresses.Text.Trim();
 
-            SecurityPolicy.SaveSettings();
-            MessageBox.Show("Paramètres enregistrés !", "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            ToggleSettingsDrawer();
-        }
+            if (!SecurityPolicy.SaveSettings(out string error))
+            {
+                MessageBox.Show("Impossible d'enregistrer les paramètres : " + error,
+                    "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
-        private void ToggleSettingsDrawer()
-        {
-            settingsDrawerVisible = !settingsDrawerVisible;
-            if (settingsDrawerVisible && helpDrawerVisible) ToggleHelpDrawer();
-            pnlSettingsDrawer.Visible = settingsDrawerVisible;
-            if (settingsDrawerVisible) pnlSettingsDrawer.BringToFront();
-            btnSettingsToggle.Text = settingsDrawerVisible ? "[X] FERMER" : "PARAMÈTRES DLP";
+            MessageBox.Show("Paramètres enregistrés !", "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
         }
     }
 }

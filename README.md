@@ -96,6 +96,8 @@ caprice/
 
 ## 🛠️ Lancement & Compilation
 
+L'icône `Capr-ICE.ico` à la racine du dépôt est intégrée à l'exécutable lors de la compilation et utilisée par la fenêtre CaprICE.
+
 ### Exécution du Binaire
 
 * **Depuis le dossier de build Windows** :

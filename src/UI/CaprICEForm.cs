@@ -23,8 +23,6 @@ namespace CaprICE.UI
         private Panel pnlTopBar;
         private Button btnClose;
         private Button btnMin;
-        private Button btnSettingsToggle;
-        private Button btnHelpToggle;
 
         private Label lblTitle;
         private Label lblSubtitle;
@@ -44,11 +42,9 @@ namespace CaprICE.UI
 
         // Settings Drawer Panel
         private Panel pnlSettingsDrawer;
-        private bool settingsDrawerVisible = false;
 
         // Help Drawer Panel
         private Panel pnlHelpDrawer;
-        private bool helpDrawerVisible = false;
 
         // Settings Controls inside Settings Drawer
         private CheckBox cbApiKeys;
@@ -81,18 +77,11 @@ namespace CaprICE.UI
 
         private List<InterceptEvent> eventsList = new List<InterceptEvent>();
 
-        // Toggle Buttons & Drawers
-        private Button btnMemoryToggle;
-        private Button btnPromptToggle;
-        private Button btnChatToggle;
-
+        // Drawers
         private Panel pnlMemoryDrawer;
-        private bool memoryDrawerVisible = false;
         private TextBox txtMemoryEditor;
 
         private Panel pnlPromptDrawer;
-        private bool promptDrawerVisible = false;
-        private TextBox txtPromptEditor;
 
         // Nouveaux composants pour le Single-Page Workspace avec Glitch
         private Panel pnlSidebar;
@@ -104,6 +93,7 @@ namespace CaprICE.UI
         private CyberNavButton btnNavMemory;
         private CyberNavButton btnNavSecurity;
         private CyberNavButton btnNavSettings;
+        private CyberNavButton btnNavHelp;
         private Control activeView;
 
         public CaprICEForm()
@@ -122,6 +112,7 @@ namespace CaprICE.UI
             this.BackColor = NeonTheme.Ground;
             this.ForeColor = NeonTheme.White;
             this.Font = NeonTheme.FontBody;
+            this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 
             toolTips = new ToolTip
             {
@@ -160,7 +151,7 @@ namespace CaprICE.UI
             this.Controls.Add(pnlHeaderContainer);
 
             // Vue par défaut : Chat
-            SwitchWorkspaceView(pnlChatDrawer, btnNavChat);
+            ShowChatDrawer();
 
             LayoutHeaderButtons();
             NeonTheme.Clip(this, 20, 6);
@@ -181,17 +172,16 @@ namespace CaprICE.UI
             btnNavMemory = new CyberNavButton("🧠  MEMORY");
             btnNavSecurity = new CyberNavButton("🛡️  SECURITY");
             btnNavSettings = new CyberNavButton("⚙️  SETTINGS");
+            btnNavHelp = new CyberNavButton("❔  GUIDE");
 
-            btnNavChat.Click += (s, e) => SwitchWorkspaceView(pnlChatDrawer, btnNavChat);
-            btnNavPrompts.Click += (s, e) => SwitchWorkspaceView(pnlPromptDrawer, btnNavPrompts);
-            btnNavMemory.Click += (s, e) => 
-            {
-                txtMemoryEditor.Text = MemoryManager.ReadMemory();
-                SwitchWorkspaceView(pnlMemoryDrawer, btnNavMemory);
-            };
+            btnNavChat.Click += (s, e) => ShowChatDrawer();
+            btnNavPrompts.Click += (s, e) => ShowPromptDrawer();
+            btnNavMemory.Click += (s, e) => ShowMemoryDrawer();
             btnNavSecurity.Click += (s, e) => SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
             btnNavSettings.Click += (s, e) => SwitchWorkspaceView(pnlSettingsDrawer, btnNavSettings);
+            btnNavHelp.Click += (s, e) => SwitchWorkspaceView(pnlHelpDrawer, btnNavHelp);
 
+            pnlSidebar.Controls.Add(btnNavHelp);
             pnlSidebar.Controls.Add(btnNavSettings);
             pnlSidebar.Controls.Add(btnNavSecurity);
             pnlSidebar.Controls.Add(btnNavMemory);
@@ -209,6 +199,58 @@ namespace CaprICE.UI
             };
         }
 
+        private Control BuildDrawerLayout(string title, Color titleColor, Control content, params Control[] actions)
+        {
+            TableLayoutPanel layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 3,
+                BackColor = NeonTheme.Well,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty
+            };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, actions.Length * 42F));
+
+            Label header = new Label
+            {
+                Text = title,
+                Font = NeonTheme.FontTitle,
+                ForeColor = titleColor,
+                Dock = DockStyle.Fill,
+                AutoEllipsis = true,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+
+            TableLayoutPanel footer = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = actions.Length,
+                BackColor = NeonTheme.Well,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty
+            };
+            footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            for (int i = 0; i < actions.Length; i++)
+            {
+                footer.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
+                actions[i].Dock = DockStyle.Fill;
+                actions[i].Margin = new Padding(0, 3, 0, 3);
+                footer.Controls.Add(actions[i], 0, i);
+            }
+
+            content.Dock = DockStyle.Fill;
+            content.Margin = Padding.Empty;
+            layout.Controls.Add(header, 0, 0);
+            layout.Controls.Add(content, 0, 1);
+            layout.Controls.Add(footer, 0, 2);
+            return layout;
+        }
+
         /// <summary>
         /// Permute la vue active dans le Workspace en appliquant un effet de Glitch RGB.
         /// </summary>
@@ -216,23 +258,49 @@ namespace CaprICE.UI
         {
             if (targetView == null || activeView == targetView) return;
 
-            // Déclencher le GlitchOverlay
+            GlitchOverlay previousGlitch = null;
+            foreach (Control control in pnlWorkspace.Controls)
+            {
+                if (control is GlitchOverlay)
+                {
+                    previousGlitch = (GlitchOverlay)control;
+                    break;
+                }
+            }
+            if (previousGlitch != null)
+            {
+                pnlWorkspace.Controls.Remove(previousGlitch);
+                previousGlitch.Dispose();
+            }
+
             if (activeView != null)
             {
                 GlitchOverlay glitch = new GlitchOverlay(pnlWorkspace);
+                pnlWorkspace.Controls.Remove(activeView);
+
+                foreach (Control ctrl in pnlSidebar.Controls)
+                {
+                    if (ctrl is CyberNavButton navBtn)
+                        navBtn.IsActive = (navBtn == targetButton);
+                }
+
+                targetView.Visible = true;
+                targetView.Dock = DockStyle.Fill;
+                pnlWorkspace.Controls.Add(targetView);
+                activeView = targetView;
+
+                glitch.Dock = DockStyle.Fill;
                 pnlWorkspace.Controls.Add(glitch);
                 glitch.BringToFront();
+                return;
             }
 
-            // Met à jour l'état visuel des boutons de la Sidebar
             foreach (Control ctrl in pnlSidebar.Controls)
             {
                 if (ctrl is CyberNavButton navBtn)
                     navBtn.IsActive = (navBtn == targetButton);
             }
 
-            // Remplacer le contenu du Workspace
-            pnlWorkspace.Controls.Clear();
             targetView.Visible = true;
             targetView.Dock = DockStyle.Fill;
             pnlWorkspace.Controls.Add(targetView);

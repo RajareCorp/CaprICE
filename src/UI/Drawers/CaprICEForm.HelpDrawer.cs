@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
-using CaprICE.Hooks;
-using CaprICE.Security;
-using CaprICE.Services;
 
 namespace CaprICE.UI
 {
@@ -16,29 +9,14 @@ namespace CaprICE.UI
         {
             pnlHelpDrawer = new Panel
             {
-                Dock = DockStyle.Right,
-                Width = 460,
+                Dock = DockStyle.Fill,
                 BackColor = NeonTheme.Well,
                 Visible = false,
                 Padding = new Padding(20)
             };
 
-            Label lblHelpTitle = new Label
-            {
-                Text = "GUIDE DES OPTIONS // CAPRICE",
-                Font = NeonTheme.FontTitle,
-                ForeColor = NeonTheme.Rose,
-                Dock = DockStyle.Top,
-                Height = 36
-            };
-
-            Button btnCloseHelp = CyberControls.Button("FERMER LE GUIDE [X]", 170, 32, NeonTheme.Edge, NeonTheme.Rose);
-            btnCloseHelp.Dock = DockStyle.Bottom;
-            btnCloseHelp.Click += (s, e) => ToggleHelpDrawer();
-
             TextBox txtHelpContent = new TextBox
             {
-                Dock = DockStyle.Fill,
                 Multiline = true,
                 ReadOnly = true,
                 ScrollBars = ScrollBars.Vertical,
@@ -66,18 +44,11 @@ namespace CaprICE.UI
 - Demande confirmation avec prévisualisation avant envoi."
             };
 
-            pnlHelpDrawer.Controls.Add(txtHelpContent);
-            pnlHelpDrawer.Controls.Add(lblHelpTitle);
-            pnlHelpDrawer.Controls.Add(btnCloseHelp);
-        }
+            Button btnClose = CyberControls.Button("FERMER", 140, 34, NeonTheme.Edge, NeonTheme.Rose);
+            btnClose.Click += (s, e) => SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
 
-        private void ToggleHelpDrawer()
-        {
-            helpDrawerVisible = !helpDrawerVisible;
-            if (helpDrawerVisible && settingsDrawerVisible) ToggleSettingsDrawer();
-            pnlHelpDrawer.Visible = helpDrawerVisible;
-            if (helpDrawerVisible) pnlHelpDrawer.BringToFront();
-            btnHelpToggle.Text = helpDrawerVisible ? "[X] FERMER" : "? GUIDE";
+            pnlHelpDrawer.Controls.Add(BuildDrawerLayout(
+                "GUIDE DES OPTIONS // CAPRICE", NeonTheme.Rose, txtHelpContent, btnClose));
         }
     }
 }

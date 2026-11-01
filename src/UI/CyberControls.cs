@@ -173,10 +173,20 @@ namespace CaprICE.UI
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && snapshot != null)
+            if (disposing)
             {
-                snapshot.Dispose();
-                snapshot = null;
+                if (glitchTimer != null)
+                {
+                    glitchTimer.Stop();
+                    glitchTimer.Dispose();
+                    glitchTimer = null;
+                }
+
+                if (snapshot != null)
+                {
+                    snapshot.Dispose();
+                    snapshot = null;
+                }
             }
             base.Dispose(disposing);
         }

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 using CaprICE.Hooks;
 using CaprICE.Services;
@@ -11,7 +13,7 @@ namespace CaprICE.UI
         private Panel pnlChatDrawer;
         private Panel pnlMessageList;
         private SavedChatData currentChatData;
-        private bool chatDrawerVisible = false;
+        private List<TranscriptData> currentTranscripts = new List<TranscriptData>();
 
         private void InitializeChatDrawer()
         {
@@ -24,22 +26,51 @@ namespace CaprICE.UI
                 Padding = new Padding(20)
             };
 
+            TableLayoutPanel layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 3,
+                BackColor = NeonTheme.Well,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty
+            };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 72F));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
+
+            TableLayoutPanel header = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 2,
+                BackColor = NeonTheme.Well,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty
+            };
+            header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 104F));
+            header.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+            header.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+
             Label lblTitle = new Label
             {
-                Text = "GESTIONNAIRE DE MÉMOIRE (chat.json)",
+                Text = "CHAT & TRANSCRIPTIONS",
                 Font = NeonTheme.FontTitle,
                 ForeColor = NeonTheme.Yellow,
-                Dock = DockStyle.Top,
-                Height = 36
+                Dock = DockStyle.Fill,
+                AutoEllipsis = true,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
             Label lblSub = new Label
             {
-                Text = "Supprimez sélectivement les messages pour altérer la mémoire vivante de Capri.",
+                Text = "Historique, captures et journaux locaux de Capri.",
                 Font = NeonTheme.FontSmall,
                 ForeColor = NeonTheme.Faint,
-                Dock = DockStyle.Top,
-                Height = 24
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
             pnlMessageList = new Panel
@@ -47,185 +78,348 @@ namespace CaprICE.UI
                 Dock = DockStyle.Fill,
                 AutoScroll = true,
                 BackColor = NeonTheme.Well,
-                Padding = new Padding(0, 10, 10, 10)
+                Padding = new Padding(0, 10, 10, 10),
+                Margin = Padding.Empty
             };
+            pnlMessageList.SizeChanged += (s, e) => RenderMessageCards();
 
-            Button btnClearAll = CyberControls.Button("PURGER TOUTE LA MÉMOIRE", 240, 36, NeonTheme.Edge, NeonTheme.Rose);
-            btnClearAll.Dock = DockStyle.Bottom;
+            Button btnClose = CyberControls.Button("FERMER", 96, 30, NeonTheme.Edge, NeonTheme.Rose);
+            btnClose.Dock = DockStyle.Fill;
+            btnClose.Margin = new Padding(4, 2, 0, 2);
+            btnClose.Click += (s, e) => SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
+
+            TableLayoutPanel footer = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1,
+                BackColor = NeonTheme.Well,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty
+            };
+            footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+
+            Button btnClearAll = CyberControls.Button("EFFACER LE CHAT", 240, 38, NeonTheme.Edge, NeonTheme.Rose);
+            btnClearAll.Dock = DockStyle.Fill;
+            btnClearAll.Margin = new Padding(0, 4, 4, 4);
             btnClearAll.Click += (s, e) =>
             {
-                if (MessageBox.Show("Voulez-vous vraiment effacer tout l'historique ?", "CaprICE Memory Guard", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                if (MessageBox.Show("Effacer tout l'historique de chat et les captures visuelles ?",
+                    "CaprICE // Chat", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
+                    currentChatData = ChatHistoryManager.LoadData();
                     currentChatData.Messages.Clear();
-                    if (currentChatData.Seen != null) currentChatData.Seen.Clear();
-                    SaveAndRefresh();
+                    currentChatData.Seen.Clear();
+                    SaveAndRefresh(true);
                 }
             };
 
-            Button btnClose = CyberControls.Button("FERMER [X]", 120, 32, NeonTheme.Edge, NeonTheme.Rose);
-            btnClose.Dock = DockStyle.Bottom;
-            btnClose.Click += (s, e) => ToggleChatDrawer();
+            Button btnClearTranscripts = CyberControls.Button("EFFACER LES TRANSCRIPTIONS", 250, 38, NeonTheme.Edge, NeonTheme.Yellow);
+            btnClearTranscripts.Dock = DockStyle.Fill;
+            btnClearTranscripts.Margin = new Padding(4, 4, 0, 4);
+            btnClearTranscripts.Click += (s, e) =>
+            {
+                if (MessageBox.Show("Supprimer les journaux quotidiens et unfolded.txt ?",
+                    "CaprICE // Transcriptions", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
 
-            pnlChatDrawer.Controls.Add(pnlMessageList);
-            pnlChatDrawer.Controls.Add(lblSub);
-            pnlChatDrawer.Controls.Add(lblTitle);
-            pnlChatDrawer.Controls.Add(btnClearAll);
-            pnlChatDrawer.Controls.Add(btnClose);
+                try
+                {
+                    TranscriptManager.DeleteAll();
+                    currentTranscripts = TranscriptManager.LoadAll();
+                    RenderMessageCards();
+                }
+                catch (IOException ex)
+                {
+                    MessageBox.Show("Impossible de supprimer les transcriptions : " + ex.Message,
+                        "CaprICE // Transcriptions", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    MessageBox.Show("Accès refusé lors de la suppression des transcriptions : " + ex.Message,
+                        "CaprICE // Transcriptions", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            };
+
+            header.Controls.Add(lblTitle, 0, 0);
+            header.Controls.Add(btnClose, 1, 0);
+            header.Controls.Add(lblSub, 0, 1);
+            header.SetColumnSpan(lblSub, 2);
+            footer.Controls.Add(btnClearAll, 0, 0);
+            footer.Controls.Add(btnClearTranscripts, 1, 0);
+
+            layout.Controls.Add(header, 0, 0);
+            layout.Controls.Add(pnlMessageList, 0, 1);
+            layout.Controls.Add(footer, 0, 2);
+            pnlChatDrawer.Controls.Add(layout);
 
             this.Controls.Add(pnlChatDrawer);
         }
 
         private void RenderMessageCards()
         {
-            pnlMessageList.Controls.Clear();
-            if (currentChatData == null) return;
+            if (pnlMessageList == null || pnlMessageList.IsDisposed) return;
 
             pnlMessageList.SuspendLayout();
-
-            int topOffset = 0;
-
-            // Rendu des messages de conversation (MESSAGES)
-            if (currentChatData.Messages != null)
+            try
             {
-                for (int i = 0; i < currentChatData.Messages.Count; i++)
+                while (pnlMessageList.Controls.Count > 0)
                 {
-                    int index = i;
-                    var msg = currentChatData.Messages[i];
+                    Control oldControl = pnlMessageList.Controls[0];
+                    pnlMessageList.Controls.RemoveAt(0);
+                    oldControl.Dispose();
+                }
+                if (currentChatData == null) return;
 
-                    Panel card = CreateMessageCard(
-                        role: msg.Role?.ToUpper() ?? "MSG",
-                        content: msg.Content,
-                        headerColor: msg.Role == "user" ? NeonTheme.Cyan : NeonTheme.Rose,
-                        onDelete: () =>
-                        {
-                            currentChatData.Messages.RemoveAt(index);
-                            SaveAndRefresh();
-                        }
-                    );
+                int topOffset = 0;
 
-                    card.Top = topOffset;
-                    pnlMessageList.Controls.Add(card);
-                    topOffset += card.Height + 10;
+                if (currentChatData.Messages != null)
+                {
+                    for (int i = 0; i < currentChatData.Messages.Count; i++)
+                    {
+                        var msg = currentChatData.Messages[i];
+                        if (msg == null) continue;
+
+                        Panel card = CreateMessageCard(
+                            role: msg.Role?.ToUpper() ?? "MSG",
+                            content: msg.Content,
+                            headerColor: msg.Role == "user" ? NeonTheme.Cyan : NeonTheme.Rose,
+                            onDelete: () => DeleteChatMessage(msg)
+                        );
+
+                        card.Top = topOffset;
+                        pnlMessageList.Controls.Add(card);
+                        topOffset += card.Height + 10;
+                    }
+                }
+
+                if (currentChatData.Seen != null && currentChatData.Seen.Count > 0)
+                {
+                    AddSectionHeader("--- CAPTURES D'ÉCRAN / MÉMOIRE VISUELLE ---", NeonTheme.Yellow, ref topOffset);
+
+                    for (int i = 0; i < currentChatData.Seen.Count; i++)
+                    {
+                        var sighting = currentChatData.Seen[i];
+                        if (sighting == null) continue;
+
+                        string displayText = "[VU] " + sighting.Saw + (string.IsNullOrEmpty(sighting.Said) ? "" : "\r\n[RÉPONSE] " + sighting.Said);
+
+                        Panel card = CreateMessageCard(
+                            role: "SIGHTING",
+                            content: displayText,
+                            headerColor: NeonTheme.Yellow,
+                            onDelete: () => DeleteSighting(sighting)
+                        );
+
+                        card.Top = topOffset;
+                        pnlMessageList.Controls.Add(card);
+                        topOffset += card.Height + 10;
+                    }
+                }
+
+                if (currentTranscripts != null && currentTranscripts.Count > 0)
+                {
+                    AddSectionHeader("--- TRANSCRIPTIONS LOCALES ---", NeonTheme.Cyan, ref topOffset);
+
+                    foreach (TranscriptData transcript in currentTranscripts)
+                    {
+                        TranscriptData selectedTranscript = transcript;
+                        Panel card = CreateMessageCard(
+                            role: selectedTranscript.Name,
+                            content: selectedTranscript.Content,
+                            headerColor: NeonTheme.Cyan,
+                            onDelete: () => DeleteTranscript(selectedTranscript.Name)
+                        );
+
+                        card.Top = topOffset;
+                        pnlMessageList.Controls.Add(card);
+                        topOffset += card.Height + 10;
+                    }
                 }
             }
-
-            // Rendu des captures visuelles (SEEN)
-            if (currentChatData.Seen != null && currentChatData.Seen.Count > 0)
+            finally
             {
-                Label lblSeenHeader = new Label
-                {
-                    Text = "--- CAPTURES D'ÉCRAN / MÉMOIRE VISUELLE ---",
-                    Font = NeonTheme.FontSmall,
-                    ForeColor = NeonTheme.Yellow,
-                    Top = topOffset + 10,
-                    Height = 24,
-                    Width = pnlMessageList.Width - 25
-                };
-                pnlMessageList.Controls.Add(lblSeenHeader);
-                topOffset += 34;
-
-                for (int i = 0; i < currentChatData.Seen.Count; i++)
-                {
-                    int index = i;
-                    var sighting = currentChatData.Seen[i];
-
-                    string displayText = "[VU] " + sighting.Saw + (string.IsNullOrEmpty(sighting.Said) ? "" : "\r\n[RÉPONSE] " + sighting.Said);
-
-                    Panel card = CreateMessageCard(
-                        role: "SIGHTING",
-                        content: displayText,
-                        headerColor: NeonTheme.Yellow,
-                        onDelete: () =>
-                        {
-                            currentChatData.Seen.RemoveAt(index);
-                            SaveAndRefresh();
-                        }
-                    );
-
-                    card.Top = topOffset;
-                    pnlMessageList.Controls.Add(card);
-                    topOffset += card.Height + 10;
-                }
+                pnlMessageList.ResumeLayout();
             }
+        }
 
-            pnlMessageList.ResumeLayout();
+        private void AddSectionHeader(string text, Color color, ref int topOffset)
+        {
+            Label header = new Label
+            {
+                Text = text,
+                Font = NeonTheme.FontSmall,
+                ForeColor = color,
+                Top = topOffset + 10,
+                Height = 24,
+                Width = Math.Max(100, pnlMessageList.ClientSize.Width - 25)
+            };
+            pnlMessageList.Controls.Add(header);
+            topOffset += 34;
         }
 
         private Panel CreateMessageCard(string role, string content, Color headerColor, Action onDelete)
         {
+            string displayContent = content ?? string.Empty;
+            int cardWidth = Math.Max(220, pnlMessageList.ClientSize.Width - 25);
+            int textWidth = Math.Max(120, cardWidth - 42);
+            int textHeight = Math.Max(40, Math.Min(220,
+                TextRenderer.MeasureText(displayContent, NeonTheme.FontMono, new Size(textWidth, 0),
+                    TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl).Height + 10));
+
             Panel card = new Panel
             {
-                Width = pnlMessageList.Width - 25,
+                Width = cardWidth,
                 BackColor = NeonTheme.Field,
-                Padding = new Padding(10),
                 BorderStyle = BorderStyle.None
             };
 
+            TableLayoutPanel cardLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 3,
+                BackColor = NeonTheme.Field,
+                Padding = new Padding(10),
+                Margin = Padding.Empty
+            };
+            cardLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            cardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+            cardLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            cardLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+
             Label lblRole = new Label
             {
-                Text = role,
-                Font = NeonTheme.FontTitle,
+                Text = role ?? "MSG",
+                Font = NeonTheme.FontSmall,
                 ForeColor = headerColor,
-                Dock = DockStyle.Top,
-                Height = 22
+                Dock = DockStyle.Fill,
+                AutoEllipsis = true,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
             TextBox txtContent = new TextBox
             {
-                Text = content,
+                Text = displayContent,
                 Multiline = true,
                 ReadOnly = true,
                 ScrollBars = ScrollBars.Vertical,
                 BackColor = NeonTheme.Field,
                 ForeColor = NeonTheme.White,
-                Font = new Font("Consolas", 9.5F, FontStyle.Regular),
+                Font = NeonTheme.FontMono,
                 BorderStyle = BorderStyle.None,
                 Dock = DockStyle.Fill
             };
 
-            Button btnDelete = CyberControls.Button("SUPPRIMER [X]", 130, 26, NeonTheme.Edge, NeonTheme.Rose);
-            btnDelete.Dock = DockStyle.Bottom;
+            Button btnDelete = CyberControls.Button("SUPPRIMER", 130, 28, NeonTheme.Edge, NeonTheme.Rose);
+            btnDelete.Dock = DockStyle.Fill;
+            btnDelete.Margin = Padding.Empty;
             btnDelete.Click += (s, e) => onDelete();
 
-            // Calcul dynamique de la hauteur en fonction du texte
-            int textHeight = Math.Max(40, Math.Min(120, TextRenderer.MeasureText(content, txtContent.Font, new Size(card.Width - 20, 0), TextFormatFlags.WordBreak).Height + 10));
-            card.Height = textHeight + 60;
-
-            card.Controls.Add(txtContent);
-            card.Controls.Add(lblRole);
-            card.Controls.Add(btnDelete);
+            card.Height = textHeight + 76;
+            cardLayout.Controls.Add(lblRole, 0, 0);
+            cardLayout.Controls.Add(txtContent, 0, 1);
+            cardLayout.Controls.Add(btnDelete, 0, 2);
+            card.Controls.Add(cardLayout);
 
             return card;
         }
 
-        private void SaveAndRefresh()
+        private void DeleteChatMessage(ChatMessageData selected)
+        {
+            currentChatData = ChatHistoryManager.LoadData();
+            int index = currentChatData.Messages.FindIndex(message =>
+                message != null && message.Role == selected.Role && message.Content == selected.Content);
+            if (index < 0)
+            {
+                RenderMessageCards();
+                MessageBox.Show("Ce message n'existe plus dans l'historique actuel. La liste a été actualisée.",
+                    "CaprICE // Chat", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            currentChatData.Messages.RemoveAt(index);
+            SaveAndRefresh(true);
+        }
+
+        private void DeleteSighting(SightingData selected)
+        {
+            currentChatData = ChatHistoryManager.LoadData();
+            int index = currentChatData.Seen.FindIndex(sighting =>
+                sighting != null && sighting.At == selected.At && sighting.Saw == selected.Saw
+                && sighting.Said == selected.Said && sighting.Asked == selected.Asked);
+            if (index < 0)
+            {
+                RenderMessageCards();
+                MessageBox.Show("Cette capture n'existe plus dans l'historique actuel. La liste a été actualisée.",
+                    "CaprICE // Chat", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            currentChatData.Seen.RemoveAt(index);
+            SaveAndRefresh(false);
+        }
+
+        private void DeleteTranscript(string fileName)
+        {
+            try
+            {
+                TranscriptManager.Delete(fileName);
+                currentTranscripts = TranscriptManager.LoadAll();
+                RenderMessageCards();
+            }
+            catch (IOException ex)
+            {
+                MessageBox.Show("Impossible de supprimer la transcription : " + ex.Message,
+                    "CaprICE // Transcriptions", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                MessageBox.Show("Accès refusé lors de la suppression de la transcription : " + ex.Message,
+                    "CaprICE // Transcriptions", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void SaveAndRefresh(bool clearBrainHistory)
         {
             if (ChatHistoryManager.SaveData(currentChatData, out string err))
             {
-                CaprICEHook.ClearBrainHistory(); // Purge du cache mémoire
+                if (clearBrainHistory && !CaprICEHook.ClearBrainHistory())
+                {
+                    MessageBox.Show("L'historique est enregistré, mais l'historique actif de Capri n'a pas pu être vidé.",
+                        "CaprICE // Chat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
                 RenderMessageCards();
             }
             else
             {
-                MessageBox.Show("Erreur de sauvegarde : " + err, "CaprICE Memory", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Erreur de sauvegarde : " + err, "CaprICE // Chat",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void ToggleChatDrawer()
+        private void ShowChatDrawer()
         {
-            chatDrawerVisible = !chatDrawerVisible;
-            if (chatDrawerVisible)
+            try
             {
-                if (settingsDrawerVisible) ToggleSettingsDrawer();
-                if (helpDrawerVisible) ToggleHelpDrawer();
-                if (promptDrawerVisible) TogglePromptDrawer();
-
                 currentChatData = ChatHistoryManager.LoadData();
-                RenderMessageCards();
-
-                pnlChatDrawer.BringToFront();
+                currentTranscripts = TranscriptManager.LoadAll();
             }
-            pnlChatDrawer.Visible = chatDrawerVisible;
+            catch (IOException ex)
+            {
+                MessageBox.Show("Impossible de lire les transcriptions : " + ex.Message,
+                    "CaprICE // Transcriptions", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                currentTranscripts = new List<TranscriptData>();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                MessageBox.Show("Accès refusé lors de la lecture des transcriptions : " + ex.Message,
+                    "CaprICE // Transcriptions", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                currentTranscripts = new List<TranscriptData>();
+            }
+
+            RenderMessageCards();
+            SwitchWorkspaceView(pnlChatDrawer, btnNavChat);
         }
     }
 }

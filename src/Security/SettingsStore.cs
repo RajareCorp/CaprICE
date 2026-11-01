@@ -8,8 +8,9 @@ namespace CaprICE.Security
     /// <summary>Lecture / écriture de caprice_settings.json (format JSON minimal, sans dépendance).</summary>
     internal static class SettingsStore
     {
-        public static void Save()
+        public static bool Save(out string error)
         {
+            error = null;
             try
             {
                 StringBuilder sb = new StringBuilder();
@@ -28,8 +29,13 @@ namespace CaprICE.Security
                 sb.AppendLine("  \"CustomAddresses\": \"" + Escape(SecurityPolicy.CustomAddresses) + "\"");
                 sb.AppendLine("}");
                 File.WriteAllText(StoragePaths.Settings, sb.ToString(), Encoding.UTF8);
+                return true;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
         }
 
         public static void Load()

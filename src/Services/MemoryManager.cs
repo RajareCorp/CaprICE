@@ -1,6 +1,6 @@
-using System;
 using System.IO;
 using System.Text;
+using CaprICE.Services;
 
 namespace CaprICE
 {
@@ -8,8 +8,8 @@ namespace CaprICE
     {
         public static string GetMemoryFilePath()
         {
-            string localCapri = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Capri");
-            
+            string localCapri = CapriDataPaths.DirectoryPath;
+
             string candidateMem = Path.Combine(localCapri, "memories.md");
             if (File.Exists(candidateMem)) return candidateMem;
 

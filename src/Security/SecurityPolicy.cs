@@ -34,7 +34,14 @@ namespace CaprICE.Security
             LoadSettings();
         }
 
-        public static void SaveSettings() { SettingsStore.Save(); }
+        public static void SaveSettings()
+        {
+            string error;
+            if (!SettingsStore.Save(out error))
+                System.Diagnostics.Debug.WriteLine("Unable to save CaprICE settings: " + error);
+        }
+
+        public static bool SaveSettings(out string error) { return SettingsStore.Save(out error); }
         public static void LoadSettings() { SettingsStore.Load(); }
 
         public static InterceptStatus Evaluate(string url, ref string payload, out List<string> violations, out string reason)
