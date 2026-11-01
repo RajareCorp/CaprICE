@@ -1,12 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
-using CaprICE.Hooks;
 using CaprICE.Security;
-using CaprICE.Services;
 
 namespace CaprICE.UI
 {
@@ -14,7 +10,7 @@ namespace CaprICE.UI
     {
         private void BuildTopBar()
         {
-            // Top Header Bar
+            // Barre de titre Cyber
             pnlTopBar = new Panel
             {
                 Dock = DockStyle.Top,
@@ -63,38 +59,17 @@ namespace CaprICE.UI
             };
             lblStats.MouseDown += OnDragWindow;
 
-            // Header Buttons
-            btnSettingsToggle = CyberControls.Button("PARAMÈTRES DLP", 150, 30, NeonTheme.DeepEdge, NeonTheme.Cyan);
-            btnSettingsToggle.Click += (s, e) => ToggleSettingsDrawer();
-
-            btnHelpToggle = CyberControls.Button("? GUIDE", 90, 30, NeonTheme.Edge, NeonTheme.White);
-            btnHelpToggle.Click += (s, e) => ToggleHelpDrawer();
-
+            // Boutons Système de la fenêtre
             btnMin = CyberControls.Button("—", 42, 30, NeonTheme.Edge, NeonTheme.White);
             btnMin.Click += (s, e) => { this.WindowState = FormWindowState.Minimized; };
 
             btnClose = CyberControls.Button("✕ FERMER", 95, 30, NeonTheme.Edge, NeonTheme.Rose);
-            btnClose.Click += (s, e) => { Application.Exit(); };
-
-            btnMemoryToggle = CyberControls.Button("MÉMOIRE (.MD)", 130, 30, NeonTheme.DeepEdge, NeonTheme.Cyan);
-            btnMemoryToggle.Click += (s, e) => ToggleMemoryDrawer();
-
-            btnPromptToggle = CyberControls.Button("SYSTEM PROMPT", 130, 30, NeonTheme.DeepEdge, NeonTheme.Rose);
-            btnPromptToggle.Click += (s, e) => TogglePromptDrawer();
-
-            btnChatToggle = CyberControls.Button("CHAT (.JSON)", 120, 30, NeonTheme.Edge, NeonTheme.Yellow);
-            btnChatToggle.Click += (s, e) => ToggleChatDrawer();
-
-            pnlTopBar.Controls.Add(btnMemoryToggle);
-            pnlTopBar.Controls.Add(btnPromptToggle);
-            pnlTopBar.Controls.Add(btnChatToggle);
+            btnClose.Click += (s, e) => { ShutdownAndExit(); };
 
             pnlTopBar.Controls.Add(lblTitle);
             pnlTopBar.Controls.Add(lblSubtitle);
             pnlTopBar.Controls.Add(lblStatusChip);
             pnlTopBar.Controls.Add(lblStats);
-            pnlTopBar.Controls.Add(btnSettingsToggle);
-            pnlTopBar.Controls.Add(btnHelpToggle);
             pnlTopBar.Controls.Add(btnMin);
             pnlTopBar.Controls.Add(btnClose);
 
@@ -109,10 +84,6 @@ namespace CaprICE.UI
 
             if (btnClose != null) { btnClose.Location = new Point(right - btnClose.Width, 18); right -= btnClose.Width + 8; }
             if (btnMin != null) { btnMin.Location = new Point(right - btnMin.Width, 18); right -= btnMin.Width + 14; }
-            if (btnHelpToggle != null) { btnHelpToggle.Location = new Point(right - btnHelpToggle.Width, 18); right -= btnHelpToggle.Width + 8; }
-            if (btnSettingsToggle != null) { btnSettingsToggle.Location = new Point(right - btnSettingsToggle.Width, 18); right -= btnSettingsToggle.Width + 8; }
-            if (btnPromptToggle != null) { btnPromptToggle.Location = new Point(right - btnPromptToggle.Width, 18); right -= btnPromptToggle.Width + 8; }
-            if (btnMemoryToggle != null) { btnMemoryToggle.Location = new Point(right - btnMemoryToggle.Width, 18); right -= btnMemoryToggle.Width + 14; }
             if (lblStatusChip != null) { lblStatusChip.Location = new Point(right - lblStatusChip.Width, 19); }
         }
     }

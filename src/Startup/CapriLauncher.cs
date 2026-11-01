@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -9,10 +10,8 @@ namespace CaprICE.Startup
     /// <summary>Charge l'assembly Capri en mémoire et l'exécute dans un thread STA d'arrière-plan.</summary>
     internal static class CapriLauncher
     {
-        /// <summary>
-        /// CRITIQUE : le dossier courant doit être celui de Capri pour que settings.json,
-        /// memories.md, chat.json et les packs vocaux soient lus depuis l'installation officielle.
-        /// </summary>
+        private static Thread capriThread;
+
         public static void UseCapriDirectory(string capriPath)
         {
             string capriDir = Path.GetDirectoryName(capriPath);
@@ -38,7 +37,7 @@ namespace CaprICE.Startup
 
         public static void StartInBackground(Assembly capriAssembly, string[] args)
         {
-            Thread capriThread = new Thread(delegate()
+            capriThread = new Thread(delegate()
             {
                 try
                 {
@@ -58,7 +57,10 @@ namespace CaprICE.Startup
                         }
                     }
                 }
-                catch (ThreadAbortException) { }
+                catch (ThreadAbortException) 
+                {
+                    // Catch attendu si le thread est brusquement interrompu
+                }
                 catch (Exception ex)
                 {
                     Console.WriteLine("[CaprICE Runtime] Erreur thread Capri: " + ex.Message);
@@ -67,6 +69,48 @@ namespace CaprICE.Startup
             capriThread.SetApartmentState(ApartmentState.STA);
             capriThread.IsBackground = true;
             capriThread.Start();
+        }
+
+        /// <summary>
+        /// Ferme proprement la boucle de messages WinForms et les fenêtres créées sur le thread Capri.
+        /// </summary>
+        public static void Stop()
+        {
+            if (capriThread == null || !capriThread.IsAlive) return;
+
+            try
+            {
+                // Parcourt toutes les fenêtres ouvertes dans l'application
+                FormCollection openForms = Application.OpenForms;
+                for (int i = openForms.Count - 1; i >= 0; i--)
+                {
+                    Form form = openForms[i];
+
+                    // Si la fenêtre appartient au thread Capri (et non à CaprICEForm)
+                    if (form != null && !form.IsDisposed && form.InvokeRequired)
+                    {
+                        try
+                        {
+                            form.BeginInvoke((Action)delegate
+                            {
+                                form.Close();
+                                form.Dispose();
+                            });
+                        }
+                        catch { }
+                    }
+                }
+
+                // Attend la fermeture naturelle du thread Capri pendant 1,5 seconde
+                if (!capriThread.Join(1500))
+                {
+                    Debug.WriteLine("[CapriLauncher] Capri n'a pas quitté dans les temps, fermeture forcée de l'application.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("[CapriLauncher] Exception lors de l'arrêt propre : " + ex.Message);
+            }
         }
     }
 }

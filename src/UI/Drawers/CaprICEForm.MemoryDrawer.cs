@@ -50,33 +50,14 @@ namespace CaprICE.UI
             {
                 MemoryManager.SaveMemory(txtMemoryEditor.Text);
                 MessageBox.Show("Mémoire sauvegardée avec succès !", "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                ToggleMemoryDrawer();
             };
-
             Button btnClose = CyberControls.Button("FERMER [X]", 120, 32, NeonTheme.Edge, NeonTheme.Rose);
             btnClose.Dock = DockStyle.Bottom;
-            btnClose.Click += (s, e) => ToggleMemoryDrawer();
 
             pnlMemoryDrawer.Controls.Add(txtMemoryEditor);
             pnlMemoryDrawer.Controls.Add(lblTitle);
             pnlMemoryDrawer.Controls.Add(btnSave);
             pnlMemoryDrawer.Controls.Add(btnClose);
-        }
-
-        private void ToggleMemoryDrawer()
-        {
-            memoryDrawerVisible = !memoryDrawerVisible;
-            if (memoryDrawerVisible)
-            {
-                if (settingsDrawerVisible) ToggleSettingsDrawer();
-                if (helpDrawerVisible) ToggleHelpDrawer();
-                if (promptDrawerVisible) TogglePromptDrawer();
-
-                txtMemoryEditor.Text = MemoryManager.ReadMemory();
-                pnlMemoryDrawer.BringToFront();
-            }
-            pnlMemoryDrawer.Visible = memoryDrawerVisible;
-            btnMemoryToggle.Text = memoryDrawerVisible ? "[X] FERMER" : "MÉMOIRE (.MD)";
         }
     }
 }

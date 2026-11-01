@@ -7,12 +7,13 @@ using System.Windows.Forms;
 using CaprICE.Hooks;
 using CaprICE.Security;
 using CaprICE.Services;
+using CaprICE.Startup;
 
 namespace CaprICE.UI
 {
     /// <summary>
-    /// Fenêtre principale « Mission Control ». Classe partielle, répartie par zone :
-    /// Header, Policy, Footer, Events, Inspector et un fichier par tiroir (Drawers/).
+    /// Fenêtre principale « Mission Control ».
+    /// Convertie en Single-Page Shell avec navigation par Sidebar et transitions Glitch.
     /// </summary>
     public partial class CaprICEForm : Form
     {
@@ -63,9 +64,9 @@ namespace CaprICE.UI
         private TextBox txtCustomAddresses;
         private Button btnSaveSettings;
 
-        // Main View
+        // Main View / Inspector Controls
         private ListView lvEvents;
-        private RichTextBox rtbInspector; // Utilisation de RichTextBox pour un rendu enrichi
+        private RichTextBox rtbInspector;
         private TextBox txtProxyInput;
         private Button btnClear;
         private Button btnOpenAudit;
@@ -80,6 +81,7 @@ namespace CaprICE.UI
 
         private List<InterceptEvent> eventsList = new List<InterceptEvent>();
 
+        // Toggle Buttons & Drawers
         private Button btnMemoryToggle;
         private Button btnPromptToggle;
         private Button btnChatToggle;
@@ -91,6 +93,18 @@ namespace CaprICE.UI
         private Panel pnlPromptDrawer;
         private bool promptDrawerVisible = false;
         private TextBox txtPromptEditor;
+
+        // Nouveaux composants pour le Single-Page Workspace avec Glitch
+        private Panel pnlSidebar;
+        private Panel pnlWorkspace;
+        private Panel pnlSecurityView;
+
+        private CyberNavButton btnNavChat;
+        private CyberNavButton btnNavPrompts;
+        private CyberNavButton btnNavMemory;
+        private CyberNavButton btnNavSecurity;
+        private CyberNavButton btnNavSettings;
+        private Control activeView;
 
         public CaprICEForm()
         {
@@ -115,32 +129,114 @@ namespace CaprICE.UI
                 ForeColor = NeonTheme.Cyan
             };
 
+            // Construction des composants existants (via partial classes)
             BuildTopBar();
             Panel pnlModes = BuildPolicyBar();
             BuildExplanationBanner();
             Panel pnlBottom = BuildBottomBar();
-            Panel pnlMainContainer = BuildMainView();
 
+            // Initialisation des panneaux/tiroirs
             InitializeSettingsDrawer();
             InitializeHelpDrawer();
             InitializeMemoryDrawer();
             InitializePromptDrawer();
             InitializeChatDrawer();
 
-            this.Controls.Add(pnlSettingsDrawer);
-            this.Controls.Add(pnlHelpDrawer);
-            this.Controls.Add(pnlMainContainer);
-            this.Controls.Add(pnlExplanation);
-            this.Controls.Add(pnlModes);
-            this.Controls.Add(pnlTopBar);
+            pnlSecurityView = BuildMainView();
+
+            // Construction du nouvel agencement (Sidebar + Workspace)
+            BuildSidebarNav();
+            BuildWorkspaceContainer();
+
+            // Layout global : TopBar, Policy Bar, Sidebar, Workspace, Bottom
+            Panel pnlHeaderContainer = new Panel { Dock = DockStyle.Top, AutoSize = true };
+            pnlHeaderContainer.Controls.Add(pnlExplanation);
+            pnlHeaderContainer.Controls.Add(pnlModes);
+            pnlHeaderContainer.Controls.Add(pnlTopBar);
+
+            this.Controls.Add(pnlWorkspace);
+            this.Controls.Add(pnlSidebar);
             this.Controls.Add(pnlBottom);
-            
-            this.Controls.Add(pnlMemoryDrawer);
-            this.Controls.Add(pnlPromptDrawer);
-            this.Controls.Add(pnlChatDrawer);
+            this.Controls.Add(pnlHeaderContainer);
+
+            // Vue par défaut : Chat
+            SwitchWorkspaceView(pnlChatDrawer, btnNavChat);
 
             LayoutHeaderButtons();
             NeonTheme.Clip(this, 20, 6);
+        }
+
+        private void BuildSidebarNav()
+        {
+            pnlSidebar = new Panel
+            {
+                Dock = DockStyle.Left,
+                Width = 200,
+                BackColor = NeonTheme.Band,
+                Padding = new Padding(0, 10, 0, 10)
+            };
+
+            btnNavChat = new CyberNavButton("💬  CHAT & AI") { IsActive = true };
+            btnNavPrompts = new CyberNavButton("📝  PROMPTS");
+            btnNavMemory = new CyberNavButton("🧠  MEMORY");
+            btnNavSecurity = new CyberNavButton("🛡️  SECURITY");
+            btnNavSettings = new CyberNavButton("⚙️  SETTINGS");
+
+            btnNavChat.Click += (s, e) => SwitchWorkspaceView(pnlChatDrawer, btnNavChat);
+            btnNavPrompts.Click += (s, e) => SwitchWorkspaceView(pnlPromptDrawer, btnNavPrompts);
+            btnNavMemory.Click += (s, e) => 
+            {
+                txtMemoryEditor.Text = MemoryManager.ReadMemory();
+                SwitchWorkspaceView(pnlMemoryDrawer, btnNavMemory);
+            };
+            btnNavSecurity.Click += (s, e) => SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
+            btnNavSettings.Click += (s, e) => SwitchWorkspaceView(pnlSettingsDrawer, btnNavSettings);
+
+            pnlSidebar.Controls.Add(btnNavSettings);
+            pnlSidebar.Controls.Add(btnNavSecurity);
+            pnlSidebar.Controls.Add(btnNavMemory);
+            pnlSidebar.Controls.Add(btnNavPrompts);
+            pnlSidebar.Controls.Add(btnNavChat);
+        }
+
+        private void BuildWorkspaceContainer()
+        {
+            pnlWorkspace = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = NeonTheme.Ground,
+                Padding = new Padding(5)
+            };
+        }
+
+        /// <summary>
+        /// Permute la vue active dans le Workspace en appliquant un effet de Glitch RGB.
+        /// </summary>
+        private void SwitchWorkspaceView(Control targetView, CyberNavButton targetButton)
+        {
+            if (targetView == null || activeView == targetView) return;
+
+            // Déclencher le GlitchOverlay
+            if (activeView != null)
+            {
+                GlitchOverlay glitch = new GlitchOverlay(pnlWorkspace);
+                pnlWorkspace.Controls.Add(glitch);
+                glitch.BringToFront();
+            }
+
+            // Met à jour l'état visuel des boutons de la Sidebar
+            foreach (Control ctrl in pnlSidebar.Controls)
+            {
+                if (ctrl is CyberNavButton navBtn)
+                    navBtn.IsActive = (navBtn == targetButton);
+            }
+
+            // Remplacer le contenu du Workspace
+            pnlWorkspace.Controls.Clear();
+            targetView.Visible = true;
+            targetView.Dock = DockStyle.Fill;
+            pnlWorkspace.Controls.Add(targetView);
+            activeView = targetView;
         }
 
         private void OnDragWindow(object sender, MouseEventArgs e)
@@ -165,7 +261,6 @@ namespace CaprICE.UI
             NeonTheme.Frame(e.Graphics, this.Size, 20, 6, 28, 28);
         }
 
-        /// <summary>Demande de confirmation manuelle (appelée depuis un thread de Capri).</summary>
         public static bool PromptConfirmation(string title, string content, List<string> warnings)
         {
             if (Instance == null || Instance.IsDisposed) return true;
@@ -178,5 +273,31 @@ namespace CaprICE.UI
 
             return approved;
         }
+
+        /// <summary>
+        /// Arrête proprement Capri et quitte l'application.
+        /// </summary>
+        private void ShutdownAndExit()
+        {
+            try
+            {
+                CapriLauncher.Stop();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Erreur lors de l'arrêt de Capri : " + ex.Message);
+            }
+            finally
+            {
+                Application.Exit();
+            }
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+            CapriLauncher.Stop();
+        }
+
     }
 }

@@ -5,8 +5,6 @@ using System.Windows.Forms;
 
 namespace CaprICE.UI
 {
-    // The visual identity of Capri: dark cyberpunk ground, wine glow, rose highlights,
-    // cyan accents, Bahnschrift typography, and clipped hexagonal cyber corners.
     public static class NeonTheme
     {
         public static readonly Color Ground = Color.FromArgb(10, 10, 16);
@@ -32,11 +30,11 @@ namespace CaprICE.UI
         public static readonly Color WellEdge = Color.FromArgb(72, 28, 40);
 
         // Status Colors
-        public static readonly Color StatusAllowed = Color.FromArgb(94, 240, 246);  // Cyan
-        public static readonly Color StatusBlocked = Color.FromArgb(255, 93, 102);  // Rose
-        public static readonly Color StatusWarning = Color.FromArgb(255, 185, 0);   // Amber
+        public static readonly Color StatusAllowed = Color.FromArgb(94, 240, 246);
+        public static readonly Color StatusBlocked = Color.FromArgb(255, 93, 102);
+        public static readonly Color StatusWarning = Color.FromArgb(255, 185, 0);
 
-        // Enlarged Fonts for high comfort and readability
+        // Fonts
         public static Font FontDisplay = CreateFont("Bahnschrift SemiBold Condensed", "Segoe UI Semibold", 16.0f, FontStyle.Bold);
         public static Font FontTitle = CreateFont("Bahnschrift SemiBold SemiConden", "Segoe UI", 14.0f, FontStyle.Bold);
         public static Font FontSubtitle = CreateFont("Bahnschrift SemiCondensed", "Segoe UI", 12.0f, FontStyle.Regular);
@@ -66,7 +64,6 @@ namespace CaprICE.UI
             }
         }
 
-        // Polygon with corners clipped (top-left big, top-right small, bottom-right big, bottom-left small)
         public static GraphicsPath Cut(RectangleF box, float topLeft, float topRight, float bottomRight, float bottomLeft)
         {
             GraphicsPath path = new GraphicsPath();
@@ -84,7 +81,6 @@ namespace CaprICE.UI
             return path;
         }
 
-        // Cuts a window to Capri's signature clipped corners
         public static void Clip(Control window, float big, float small)
         {
             Region old = window.Region;
@@ -93,7 +89,6 @@ namespace CaprICE.UI
             if (old != null) old.Dispose();
         }
 
-        // Draws the cyber frame edge around the window with hot red corner highlights
         public static void Frame(Graphics graphics, Size size, float big, float small, float along, float down)
         {
             SmoothingMode was = graphics.SmoothingMode;
@@ -109,7 +104,6 @@ namespace CaprICE.UI
             RectangleF hot = RectangleF.Inflate(box, -0.6f, -0.6f);
             using (Pen stroke = new Pen(Hot, 2.8f))
             {
-                // Top-left big corner accent
                 graphics.DrawLines(stroke, new[]
                 {
                     new PointF(hot.Left, hot.Top + big + down),
@@ -117,7 +111,6 @@ namespace CaprICE.UI
                     new PointF(hot.Left + big, hot.Top),
                     new PointF(hot.Left + big + along, hot.Top)
                 });
-                // Bottom-right big corner accent
                 graphics.DrawLines(stroke, new[]
                 {
                     new PointF(hot.Right, hot.Bottom - big - down),
@@ -130,7 +123,6 @@ namespace CaprICE.UI
             graphics.SmoothingMode = was;
         }
 
-        // Wine glow backdrop fading down from the top
         public static void Backdrop(Graphics graphics, Size size, float reach)
         {
             using (Brush ground = new SolidBrush(Ground))

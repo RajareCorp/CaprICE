@@ -218,7 +218,6 @@ namespace CaprICE.UI
             {
                 if (settingsDrawerVisible) ToggleSettingsDrawer();
                 if (helpDrawerVisible) ToggleHelpDrawer();
-                if (memoryDrawerVisible) ToggleMemoryDrawer();
                 if (promptDrawerVisible) TogglePromptDrawer();
 
                 currentChatData = ChatHistoryManager.LoadData();

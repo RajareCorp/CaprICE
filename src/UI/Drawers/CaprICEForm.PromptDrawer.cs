@@ -130,7 +130,6 @@ namespace CaprICE.UI
             {
                 if (settingsDrawerVisible) ToggleSettingsDrawer();
                 if (helpDrawerVisible) ToggleHelpDrawer();
-                if (memoryDrawerVisible) ToggleMemoryDrawer();
 
                 txtPersonality.Text = CaprICEHook.CustomPersonality ?? PersonaReader.GetDefaultPersonality();
                 txtSafety.Text = CaprICEHook.CustomSafety ?? PersonaReader.GetSafety();
@@ -139,7 +138,6 @@ namespace CaprICE.UI
                 pnlPromptDrawer.BringToFront();
             }
             pnlPromptDrawer.Visible = promptDrawerVisible;
-            btnPromptToggle.Text = promptDrawerVisible ? "[X] FERMER" : "SYSTEM PROMPT";
         }
     }
 }
