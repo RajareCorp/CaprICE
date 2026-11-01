@@ -82,8 +82,12 @@ namespace CaprICE.UI
             btnPromptToggle = CyberControls.Button("SYSTEM PROMPT", 130, 30, NeonTheme.DeepEdge, NeonTheme.Rose);
             btnPromptToggle.Click += (s, e) => TogglePromptDrawer();
 
+            btnChatToggle = CyberControls.Button("CHAT (.JSON)", 120, 30, NeonTheme.Edge, NeonTheme.Yellow);
+            btnChatToggle.Click += (s, e) => ToggleChatDrawer();
+
             pnlTopBar.Controls.Add(btnMemoryToggle);
             pnlTopBar.Controls.Add(btnPromptToggle);
+            pnlTopBar.Controls.Add(btnChatToggle);
 
             pnlTopBar.Controls.Add(lblTitle);
             pnlTopBar.Controls.Add(lblSubtitle);

@@ -170,5 +170,13 @@ namespace CaprICE.Hooks
             CaprICEForm.NotifyEvent(ev);
             AuditLog.Write(ev);
         }
+        
+        public static void OnBrainGreetingPostfix(ref string __result)
+        {
+            if (!string.IsNullOrEmpty(__result))
+            {
+                __result = "I.C.E Initialized. " + __result;
+            }
+        }
     }
 }

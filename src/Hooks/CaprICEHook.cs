@@ -1,12 +1,15 @@
 using System;
+using System.Collections;
 using System.Reflection;
 using System.Windows.Forms;
+using System.Linq;
 using HarmonyLib;
+using CaprICE.Services;
 
 namespace CaprICE.Hooks
 {
     /// <summary>
-    /// Point d'entrée de l'injection : état partagé (proxy, prompt système personnalisé)
+    /// Point d'entrée de l'injection : état partagé (proxy, prompts modulaire/système personnalisé)
     /// et installation des patchs Harmony sur l'assembly Capri.
     /// Les callbacks eux-mêmes sont dans BrainHooks, VoiceHooks et PersonaHooks.
     /// </summary>
@@ -14,7 +17,37 @@ namespace CaprICE.Hooks
     {
         public static Assembly CapriAssembly = null;
         public static string CustomProxyUrl = null;
-        public static string CustomSystemPrompt = null;
+
+        // Variables pour surcharger chaque section du prompt individuellement
+        public static string CustomPersonality = null;
+        public static string CustomSafety = null;
+        public static string CustomMachinery = null;
+
+        /// <summary>
+        /// Reconstitue le System Prompt global dynamiquement ou renvoie null si aucune surcharge n'est active.
+        /// </summary>
+        public static string CustomSystemPrompt
+        {
+            get
+            {
+                if (CustomPersonality == null && CustomSafety == null && CustomMachinery == null)
+                    return null;
+
+                string p = CustomPersonality ?? PersonaReader.GetDefaultPersonality();
+                string s = CustomSafety ?? PersonaReader.GetSafety();
+                string m = CustomMachinery ?? PersonaReader.GetMachinery();
+
+                return $"{p}\n{s}\n{m}";
+            }
+            set
+            {
+                // Rétrocompatibilité : réinitialise ou assigne le bloc complet à Personality
+                CustomPersonality = value;
+                CustomSafety = null;
+                CustomMachinery = null;
+            }
+        }
+
         public static bool IsInitialized { get; private set; }
 
         private const BindingFlags AnyStatic = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static;
@@ -22,6 +55,8 @@ namespace CaprICE.Hooks
         public static void Initialize(Assembly capriAssembly)
         {
             if (IsInitialized) return;
+
+            CapriAssembly = capriAssembly;
 
             try
             {
@@ -39,9 +74,44 @@ namespace CaprICE.Hooks
             }
         }
 
+        public static bool ClearBrainHistory(object brainInstance = null)
+        {
+            try
+            {
+                Type brainType = CapriAssembly?.GetType("CapriDesktop.Brain") 
+                    ?? AppDomain.CurrentDomain.GetAssemblies()
+                        .SelectMany(a => a.GetTypes())
+                        .FirstOrDefault(t => t.FullName == "CapriDesktop.Brain");
+
+                if (brainType == null) return false;
+
+                FieldInfo histField = brainType.GetField("history", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+                if (histField != null)
+                {
+                    var histList = histField.GetValue(brainInstance) as IList;
+                    if (histList != null)
+                    {
+                        histList.Clear();
+                        return true;
+                    }
+                }
+            }
+            catch { }
+            return false;
+        }
+
         private static void PatchBrain(Harmony harmony, Type brainType)
         {
             if (brainType == null) return;
+
+
+            // Brain.Greeting(int hour) -> Modification du message d'accueil initial
+            MethodInfo greeting = brainType.GetMethod("Greeting", AnyStatic);
+            if (greeting != null)
+            {
+                harmony.Patch(greeting,
+                    postfix: Hook(typeof(BrainHooks), "OnBrainGreetingPostfix"));
+            }
 
             // Brain.Persona (getter) -> remplacement du prompt système
             PropertyInfo personaProp = brainType.GetProperty("Persona", AnyStatic);

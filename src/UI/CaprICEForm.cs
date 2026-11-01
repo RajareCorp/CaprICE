@@ -82,6 +82,7 @@ namespace CaprICE.UI
 
         private Button btnMemoryToggle;
         private Button btnPromptToggle;
+        private Button btnChatToggle;
 
         private Panel pnlMemoryDrawer;
         private bool memoryDrawerVisible = false;
@@ -124,6 +125,7 @@ namespace CaprICE.UI
             InitializeHelpDrawer();
             InitializeMemoryDrawer();
             InitializePromptDrawer();
+            InitializeChatDrawer();
 
             this.Controls.Add(pnlSettingsDrawer);
             this.Controls.Add(pnlHelpDrawer);
@@ -135,6 +137,7 @@ namespace CaprICE.UI
             
             this.Controls.Add(pnlMemoryDrawer);
             this.Controls.Add(pnlPromptDrawer);
+            this.Controls.Add(pnlChatDrawer);
 
             LayoutHeaderButtons();
             NeonTheme.Clip(this, 20, 6);

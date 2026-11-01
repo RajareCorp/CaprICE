@@ -5,51 +5,52 @@ using CaprICE.Hooks;
 
 namespace CaprICE.Services
 {
-    /// <summary>Lit le prompt système d'origine de Capri (Brain.Persona) sans l'override CaprICE.</summary>
     public static class PersonaReader
     {
-        public static string GetOriginalCapriPrompt()
+        private static Type GetBrainType()
+        {
+            if (CaprICEHook.CapriAssembly != null)
+                return CaprICEHook.CapriAssembly.GetType("CapriDesktop.Brain");
+
+            return AppDomain.CurrentDomain.GetAssemblies()
+                        .SelectMany(a => a.GetTypes())
+                        .FirstOrDefault(t => t.FullName == "CapriDesktop.Brain");
+        }
+
+        private static string GetStaticStringFieldOrProp(string name)
         {
             try
             {
-                Type brainType = null;
+                Type brainType = GetBrainType();
+                if (brainType == null) return string.Empty;
 
-                if (CaprICEHook.CapriAssembly != null)
-                {
-                    brainType = CaprICEHook.CapriAssembly.GetType("CapriDesktop.Brain");
-                }
-                else
-                {
-                    brainType = AppDomain.CurrentDomain.GetAssemblies()
-                                .SelectMany(a => a.GetTypes())
-                                .FirstOrDefault(t => t.FullName == "CapriDesktop.Brain");
-                }
+                BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static;
 
-                if (brainType != null)
-                {
-                    PropertyInfo personaProp = brainType.GetProperty("Persona", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
-                    if (personaProp != null)
-                    {
-                        // Désactive temporairement l'override pour lire la vraie valeur d'origine
-                        string currentCustom = CaprICEHook.CustomSystemPrompt;
-                        CaprICEHook.CustomSystemPrompt = null;
+                FieldInfo field = brainType.GetField(name, flags);
+                if (field != null) return field.GetValue(null) as string;
 
-                        string originalPersona = personaProp.GetValue(null) as string;
-
-                        // Restaure la valeur personnalisée
-                        CaprICEHook.CustomSystemPrompt = currentCustom;
-
-                        if (!string.IsNullOrEmpty(originalPersona))
-                        {
-                            // WinForms : conversion des sauts de ligne Linux (\n) en Windows (\r\n)
-                            return originalPersona.Replace("\r\n", "\n").Replace("\n", Environment.NewLine);
-                        }
-                    }
-                }
+                PropertyInfo prop = brainType.GetProperty(name, flags);
+                if (prop != null) return prop.GetValue(null) as string;
             }
             catch { }
 
-            return "(Impossible de lire Brain.Persona depuis Capri)";
+            return string.Empty;
+        }
+
+        public static string GetDefaultPersonality() => FormatWinForms(GetStaticStringFieldOrProp("DefaultPersonality"));
+        public static string GetSafety() => FormatWinForms(GetStaticStringFieldOrProp("Safety"));
+        public static string GetMachinery() => FormatWinForms(GetStaticStringFieldOrProp("Machinery"));
+
+        public static string GetOriginalCapriPrompt()
+        {
+            string persona = GetStaticStringFieldOrProp("Persona");
+            return string.IsNullOrEmpty(persona) ? "(Impossible de lire Brain.Persona)" : FormatWinForms(persona);
+        }
+
+        private static string FormatWinForms(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return string.Empty;
+            return input.Replace("\r\n", "\n").Replace("\n", Environment.NewLine);
         }
     }
 }

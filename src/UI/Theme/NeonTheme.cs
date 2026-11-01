@@ -22,6 +22,7 @@ namespace CaprICE.UI
         public static readonly Color Edge = Color.FromArgb(92, 24, 36);
         public static readonly Color Hot = Color.FromArgb(232, 66, 70);
         public static readonly Color Cyan = Color.FromArgb(94, 240, 246);
+        public static readonly Color Yellow = Color.FromArgb(255, 185, 0);
         public static readonly Color Deep = Color.FromArgb(9, 30, 33);
         public static readonly Color DeepEdge = Color.FromArgb(40, 120, 132);
         public static readonly Color OnInk = Color.FromArgb(6, 14, 18);
