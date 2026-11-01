@@ -1,37 +1,53 @@
+<#
+    Compile CaprICE.exe depuis src/ (récursif) vers out/.
+
+    Usage :  powershell -ExecutionPolicy Bypass -File caprice\build-caprice.ps1
+             (optionnel)  -Compiler "C:\chemin\vers\csc.exe"
+
+    Prérequis : 0Harmony.dll dans lib\ (ou, à défaut, à la racine du dossier caprice\).
+#>
+param(
+    [string]$Compiler
+)
+
 $ErrorActionPreference = 'Stop'
-$root = Split-Path -Parent $PSScriptRoot
-$capriceDir = Join-Path $root 'caprice'
-$framework = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319'
-$compiler = 'C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Current\Bin\Roslyn\csc.exe'
+$capriceDir = $PSScriptRoot
 
-if (-not (Test-Path -LiteralPath $compiler)) {
-    throw 'csc.exe not found in Microsoft.NET\Framework64\v4.0.30319'
+# ---------- Compilateur C# ----------
+if (-not $Compiler) {
+    $candidates = @(
+        'C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Current\Bin\Roslyn\csc.exe',
+        'C:\Program Files\Microsoft Visual Studio\2022\Professional\Msbuild\Current\Bin\Roslyn\csc.exe',
+        'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Msbuild\Current\Bin\Roslyn\csc.exe',
+        'C:\Program Files\Microsoft Visual Studio\2022\BuildTools\Msbuild\Current\Bin\Roslyn\csc.exe',
+        (Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe')
+    )
+    $Compiler = $candidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+}
+if (-not $Compiler -or -not (Test-Path -LiteralPath $Compiler)) {
+    throw 'csc.exe introuvable. Installez Visual Studio Build Tools ou passez -Compiler "<chemin>\csc.exe".'
 }
 
-$harmony = Join-Path $capriceDir '0Harmony.dll'
-if (-not (Test-Path -LiteralPath $harmony)) {
-    throw '0Harmony.dll not found in caprice folder.'
+# ---------- Harmony ----------
+$harmony = @((Join-Path $capriceDir 'lib\0Harmony.dll'), (Join-Path $capriceDir '0Harmony.dll')) |
+    Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+if (-not $harmony) {
+    throw '0Harmony.dll introuvable (attendu dans caprice\lib\ ou caprice\).'
 }
 
-# Définition et création du dossier de sortie out/
+# ---------- Sources (tous les .cs de src\, récursif) ----------
+$srcDir = Join-Path $capriceDir 'src'
+$sources = Get-ChildItem -LiteralPath $srcDir -Recurse -Filter '*.cs' | ForEach-Object { $_.FullName }
+if (-not $sources) { throw "Aucun fichier .cs trouvé dans $srcDir" }
+
+# ---------- Sortie ----------
 $outDir = Join-Path $capriceDir 'out'
 if (-not (Test-Path -LiteralPath $outDir)) {
     New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 }
-
-# Emplacement final de l'exécutable dans out/
 $outputExe = Join-Path $outDir 'CaprICE.exe'
 
-$sources = @(
-    (Join-Path $capriceDir 'NeonTheme.cs'),
-    (Join-Path $capriceDir 'SecurityPolicy.cs'),
-    (Join-Path $capriceDir 'CaprICEHook.cs'),
-    (Join-Path $capriceDir 'CaprICEForm.cs'),
-    (Join-Path $capriceDir 'MemoryManager.cs'),
-    (Join-Path $capriceDir 'Program.cs')
-)
-
-$args = @(
+$cscArgs = @(
     '/nologo',
     '/target:winexe',
     '/platform:anycpu',
@@ -46,14 +62,14 @@ $args = @(
     ('/out:' + $outputExe)
 ) + $sources
 
-Write-Host "Compiling CaprICE.exe to $outDir..." -ForegroundColor Cyan
-& $compiler $args
+Write-Host "Compiling CaprICE.exe ($($sources.Count) files) to $outDir..." -ForegroundColor Cyan
+& $Compiler $cscArgs
 
 if ($LASTEXITCODE -ne 0) {
-    throw "Compilation of CaprICE failed."
+    throw 'Compilation of CaprICE failed.'
 }
 
-# Copie de 0Harmony.dll dans le dossier out/ pour assurer le bon fonctionnement de l'exécutable
+# 0Harmony.dll doit accompagner l'exécutable
 Copy-Item -Path $harmony -Destination (Join-Path $outDir '0Harmony.dll') -Force
 
 Write-Host "Successfully built: $outputExe" -ForegroundColor Green

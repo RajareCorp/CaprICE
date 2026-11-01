@@ -78,6 +78,22 @@ Ouvre une fenêtre d'approbation avec prévisualisation du prompt (`Autoriser` o
 
 ---
 
+## 🗂️ Structure du projet
+
+```
+caprice/
+├─ build-caprice.ps1     Script de compilation (compile src/**/*.cs)
+├─ lib/                  0Harmony.dll
+├─ docs/ARCHITECTURE.md  Détail de l'architecture et « où modifier quoi »
+└─ src/
+   ├─ Program.cs         Point d'entrée
+   ├─ Startup/           Localisation et lancement de Capri
+   ├─ Security/          Politiques, moteur DLP, réglages, journal d'audit
+   ├─ Hooks/             Patchs Harmony (Brain, Voice, Persona)
+   ├─ Services/          Mémoire (.md) et prompt d'origine
+   └─ UI/                Fenêtre, tiroirs, dialogues, thème néon
+```
+
 ## 🛠️ Lancement & Compilation
 
 ### Exécution du Binaire
@@ -177,6 +193,22 @@ Instantly blocks external cloud AI traffic. Exclusively permits local Ollama (`1
 Displays an interactive preview window before sending prompts to external LLMs (`Allow` / `Block`).
 
 ---
+
+## 🗂️ Project Structure
+
+```
+caprice/
+├─ build-caprice.ps1     Build script (compiles src/**/*.cs)
+├─ lib/                  0Harmony.dll
+├─ docs/ARCHITECTURE.md  Architecture details and "where to change what"
+└─ src/
+   ├─ Program.cs         Entry point
+   ├─ Startup/           Locating and launching Capri
+   ├─ Security/          Policies, DLP engine, settings, audit log
+   ├─ Hooks/             Harmony patches (Brain, Voice, Persona)
+   ├─ Services/          Memory (.md) and original prompt
+   └─ UI/                Window, drawers, dialogs, neon theme
+```
 
 ## 🛠️ Usage & Build
 

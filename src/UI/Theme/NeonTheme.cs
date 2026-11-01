@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-namespace CaprICE
+namespace CaprICE.UI
 {
     // The visual identity of Capri: dark cyberpunk ground, wine glow, rose highlights,
     // cyan accents, Bahnschrift typography, and clipped hexagonal cyber corners.
