@@ -1,0 +1,18 @@
+# Exécutables et sorties de build
+*.exe
+*.dll
+*.pdb
+
+# Dossier de build
+/out/
+[Bb]in/
+[Ob]bj/
+
+# Fichiers de configuration utilisateur et IDE (Visual Studio, VS Code)
+*.user
+*.suo
+.vs/
+.vscode/
+
+# Fichiers de configuration / logs locaux à ne pas suivre (optionnel)
+*.log
