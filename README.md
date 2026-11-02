@@ -90,6 +90,10 @@ Les éditeurs **PROMPTS** et **MEMORY** replient les longues lignes, conservent 
 
 Les trois sections du prompt personnalisé sont enregistrées avec les paramètres CaprICE lorsque **APPLIQUER LES HOOKS PROMPT** est sélectionné. Les retours à la ligne sont préservés au redémarrage.
 
+### ⚡ Actions locales
+
+Dans **ACTIONS**, associez un mot-clé exact à un fichier choisi localement. Quand ce mot est reconnu comme demande, CaprICE demande à Windows d'ouvrir le fichier avec l'application associée ; selon son type, certains fichiers comme les scripts peuvent s'exécuter. Le mot-clé **Performance** est réservé : il renvoie localement les mesures CPU, RAM et GPU 3D disponibles, sans transmettre ces valeurs au service d'IA. Les mesures GPU dépendent des compteurs exposés par Windows.
+
 ---
 
 ## 🗂️ Structure du projet
@@ -221,6 +225,10 @@ From **MEMORY**, **PURGER LES DONNÉES LOCALES** removes chat history, local not
 The **PROMPTS** and **MEMORY** editors wrap long lines, preserve line breaks, and color Markdown headings, quotes, and lists. Formatting is visual only; applied and saved content remains plain text.
 
 All three custom prompt sections are stored with CaprICE settings when **APPLIQUER LES HOOKS PROMPT** is selected. Line breaks are preserved across restarts.
+
+### ⚡ Local actions
+
+In **ACTIONS**, map an exact keyword to a locally selected file. When the keyword is recognized as a request, CaprICE asks Windows to open it with its associated application; depending on its type, files such as scripts may execute. **Performance** is reserved and returns available CPU, RAM, and 3D GPU measurements locally, without sending them to the AI service. GPU measurements depend on counters exposed by Windows.
 
 ---
 

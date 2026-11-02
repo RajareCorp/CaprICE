@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 using CaprICE.Security;
+using CaprICE.Services;
 using CaprICE.UI;
 
 namespace CaprICE.Hooks
@@ -36,9 +37,26 @@ namespace CaprICE.Hooks
             }
         }
 
-        public static bool OnBrainAskPrefix(object __instance, ref string text)
+        public static bool OnBrainAskPrefix(object __instance, ref string text, ref string __result, ref string followLine, out bool __state)
         {
+            __state = false;
             if (string.IsNullOrEmpty(text)) return true;
+
+            string localReply;
+            if (string.Equals(AppLaunchActions.NormalizeCommand(text), "Performance", StringComparison.OrdinalIgnoreCase))
+            {
+                __result = LocalPerformanceMonitor.GetReport();
+                followLine = string.Empty;
+                __state = true;
+                return false;
+            }
+            if (AppLaunchActions.TryExecuteExact(text, out localReply))
+            {
+                __result = localReply;
+                followLine = string.Empty;
+                __state = true;
+                return false;
+            }
 
             BrainReflection.ApplyCustomSystemPrompt(__instance, CaprICEHook.CustomSystemPrompt);
             string initialText = text;
@@ -210,9 +228,9 @@ namespace CaprICE.Hooks
             return status != InterceptStatus.Blocked;
         }
 
-        public static void OnBrainAskPostfix(string __result)
+        public static void OnBrainAskPostfix(string __result, bool __state)
         {
-            if (string.IsNullOrEmpty(__result)) return;
+            if (__state || string.IsNullOrEmpty(__result)) return;
 
             InterceptEvent ev = new InterceptEvent
             {

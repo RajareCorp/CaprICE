@@ -82,6 +82,7 @@ namespace CaprICE.UI
         private RichTextBox txtMemoryEditor;
 
         private Panel pnlPromptDrawer;
+        private Panel pnlActionsDrawer;
 
         // Composants pour le Single-Page Workspace
         private Panel pnlSidebar;
@@ -94,6 +95,7 @@ namespace CaprICE.UI
         private CyberNavButton btnNavSecurity;
         private CyberNavButton btnNavSettings;
         private CyberNavButton btnNavHelp;
+        private CyberNavButton btnNavActions;
         private Control activeView;
 
         public CaprICEForm()
@@ -131,6 +133,7 @@ namespace CaprICE.UI
             InitializeHelpDrawer();
             InitializeMemoryDrawer();
             InitializePromptDrawer();
+            InitializeActionsDrawer();
             InitializeChatDrawer();
 
             pnlSecurityView = BuildMainView();
@@ -173,6 +176,7 @@ namespace CaprICE.UI
             btnNavSecurity = new CyberNavButton("🛡️  SECURITY");
             btnNavSettings = new CyberNavButton("⚙️  SETTINGS");
             btnNavHelp = new CyberNavButton("❔  GUIDE");
+            btnNavActions = new CyberNavButton("⚡  ACTIONS");
 
             btnNavChat.Click += (s, e) => ShowChatDrawer();
             btnNavPrompts.Click += (s, e) => ShowPromptDrawer();
@@ -180,7 +184,9 @@ namespace CaprICE.UI
             btnNavSecurity.Click += (s, e) => SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
             btnNavSettings.Click += (s, e) => SwitchWorkspaceView(pnlSettingsDrawer, btnNavSettings);
             btnNavHelp.Click += (s, e) => SwitchWorkspaceView(pnlHelpDrawer, btnNavHelp);
+            btnNavActions.Click += (s, e) => ShowActionsDrawer();
 
+            pnlSidebar.Controls.Add(btnNavActions);
             pnlSidebar.Controls.Add(btnNavHelp);
             pnlSidebar.Controls.Add(btnNavSettings);
             pnlSidebar.Controls.Add(btnNavSecurity);

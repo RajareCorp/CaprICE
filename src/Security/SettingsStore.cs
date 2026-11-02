@@ -31,7 +31,8 @@ namespace CaprICE.Security
                 sb.AppendLine("  \"CustomAddresses\": \"" + Escape(SecurityPolicy.CustomAddresses) + "\",");
                 sb.AppendLine("  \"CustomPersonality\": \"" + Escape(SecurityPolicyText(CaprICEHook.CustomPersonality)) + "\",");
                 sb.AppendLine("  \"CustomSafety\": \"" + Escape(SecurityPolicyText(CaprICEHook.CustomSafety)) + "\",");
-                sb.AppendLine("  \"CustomMachinery\": \"" + Escape(SecurityPolicyText(CaprICEHook.CustomMachinery)) + "\"");
+                sb.AppendLine("  \"CustomMachinery\": \"" + Escape(SecurityPolicyText(CaprICEHook.CustomMachinery)) + "\",");
+                sb.AppendLine("  \"AppLaunchActions\": \"" + Escape(AppLaunchActions.Serialize()) + "\"");
                 sb.AppendLine("}");
                 File.WriteAllText(StoragePaths.Settings, sb.ToString(), Encoding.UTF8);
                 return true;
@@ -72,6 +73,7 @@ namespace CaprICE.Security
                 if (TryReadString(json, "CustomPersonality", out value)) CaprICEHook.CustomPersonality = EmptyAsNull(value);
                 if (TryReadString(json, "CustomSafety", out value)) CaprICEHook.CustomSafety = EmptyAsNull(value);
                 if (TryReadString(json, "CustomMachinery", out value)) CaprICEHook.CustomMachinery = EmptyAsNull(value);
+                if (TryReadString(json, "AppLaunchActions", out value)) AppLaunchActions.Load(value);
             }
             catch (Exception ex)
             {
