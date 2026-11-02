@@ -25,30 +25,30 @@ namespace CaprICE.UI
                 Font = NeonTheme.FontSubtitle,
                 BorderStyle = BorderStyle.None,
                 Text =
-@"POLITIQUES DE SÉCURITÉ :
+@"SECURITY POLICIES:
 
-1. MONITOR ONLY (Audit Passif)
+1. MONITOR ONLY (Passive Audit)
 ------------------------------------
-- Écoute et enregistre chaque échange en toute transparence.
+- Monitors and logs every exchange.
 
-2. ENFORCE DLP (Prévention Fuite)
+2. ENFORCE DLP (Data Loss Prevention)
 ------------------------------------
-- Scanne chaque prompt avant envoi au cloud et masque automatiquement les données sensibles.
+- Scans each prompt before sending it to the cloud and automatically masks sensitive data.
 
-3. STRICT LOCAL (Verrou Cloud)
+3. STRICT LOCAL (Cloud Lockdown)
 ------------------------------------
-- Coupe tout accès aux IA externes. Seul Ollama local passe.
+- Blocks all non-loopback connections; local loopback services remain allowed.
 
-4. ASK CONFIRMATION (Contrôle Manuel)
+4. ASK CONFIRMATION (Manual Control)
 ------------------------------------
-- Demande confirmation avec prévisualisation avant envoi."
+- Requests confirmation and shows a preview before sending."
             };
 
-            Button btnClose = CyberControls.Button("FERMER", 140, 34, NeonTheme.Edge, NeonTheme.Rose);
+            Button btnClose = CyberControls.Button("CLOSE", 140, 34, NeonTheme.Edge, NeonTheme.Rose);
             btnClose.Click += (s, e) => SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
 
             pnlHelpDrawer.Controls.Add(BuildDrawerLayout(
-                "GUIDE DES OPTIONS // CAPRICE", NeonTheme.Rose, txtHelpContent, btnClose));
+                "OPTIONS GUIDE // CAPRICE", NeonTheme.Rose, txtHelpContent, btnClose));
         }
     }
 }

@@ -1,0 +1,45 @@
+name: Windows release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Build and publish release assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ($env:GITHUB_REF_NAME -notmatch '^v\d+\.\d+\.\d+$') {
+            throw 'Release tags must use the vMAJOR.MINOR.PATCH format.'
+          }
+
+          .\build-caprice.ps1
+
+          $releaseDirectory = Join-Path $env:RUNNER_TEMP 'caprice-release'
+          New-Item -ItemType Directory -Path $releaseDirectory -Force | Out-Null
+          Copy-Item .\out\CaprICE.exe $releaseDirectory
+          Copy-Item .\out\0Harmony.dll $releaseDirectory
+
+          $archivePath = Join-Path $releaseDirectory 'CaprICE-windows.zip'
+          Compress-Archive -Path (Join-Path $releaseDirectory 'CaprICE.exe'), (Join-Path $releaseDirectory '0Harmony.dll') -DestinationPath $archivePath
+
+          $hash = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  CaprICE-windows.zip" | Set-Content -LiteralPath "$archivePath.sha256" -Encoding ASCII
+
+          gh release create $env:GITHUB_REF_NAME `
+            $archivePath `
+            "$archivePath.sha256" `
+            .\setup-caprice.ps1 `
+            --title "CaprICE $env:GITHUB_REF_NAME" `
+            --generate-notes

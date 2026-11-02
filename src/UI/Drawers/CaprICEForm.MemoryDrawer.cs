@@ -19,12 +19,12 @@ namespace CaprICE.UI
             }
             catch (IOException ex)
             {
-                MessageBox.Show("Impossible de lire la mémoire : " + ex.Message,
+                MessageBox.Show("Unable to read memory: " + ex.Message,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (UnauthorizedAccessException ex)
             {
-                MessageBox.Show("Accès refusé lors de la lecture de la mémoire : " + ex.Message,
+                MessageBox.Show("Access denied while reading memory: " + ex.Message,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -41,33 +41,33 @@ namespace CaprICE.UI
 
             txtMemoryEditor = new ReadableTextEditor(NeonTheme.Cyan);
 
-            Button btnSave = CyberControls.Button("SAUVEGARDER LA MÉMOIRE", 240, 36, NeonTheme.DeepEdge, NeonTheme.Cyan);
+            Button btnSave = CyberControls.Button("SAVE MEMORY", 240, 36, NeonTheme.DeepEdge, NeonTheme.Cyan);
             btnSave.Click += (s, e) =>
             {
                 try
                 {
                     MemoryManager.SaveMemory(txtMemoryEditor.Text);
-                    MessageBox.Show("Mémoire sauvegardée avec succès !", "CaprICE",
+                    MessageBox.Show("Memory saved successfully.", "CaprICE",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (IOException ex)
                 {
-                    MessageBox.Show("Impossible de sauvegarder la mémoire : " + ex.Message,
+                    MessageBox.Show("Unable to save memory: " + ex.Message,
                         "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 catch (UnauthorizedAccessException ex)
                 {
-                    MessageBox.Show("Accès refusé lors de la sauvegarde de la mémoire : " + ex.Message,
+                    MessageBox.Show("Access denied while saving memory: " + ex.Message,
                         "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             };
-            Button btnClose = CyberControls.Button("FERMER", 120, 32, NeonTheme.Edge, NeonTheme.Rose);
+            Button btnClose = CyberControls.Button("CLOSE", 120, 32, NeonTheme.Edge, NeonTheme.Rose);
             btnClose.Click += (s, e) => SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
-            Button btnPurge = CyberControls.Button("PURGER LES DONNÉES LOCALES", 290, 36, NeonTheme.Edge, NeonTheme.Rose);
+            Button btnPurge = CyberControls.Button("PURGE LOCAL DATA", 290, 36, NeonTheme.Edge, NeonTheme.Rose);
             btnPurge.Click += PurgeLocalMemory;
 
             pnlMemoryDrawer.Controls.Add(BuildDrawerLayout(
-                "MÉMOIRE CAPRI // NOTE ACTIVE, HISTORIQUE ET TRANSCRIPTIONS", NeonTheme.Cyan,
+                "CAPRI MEMORY // ACTIVE NOTE, HISTORY & TRANSCRIPTS", NeonTheme.Cyan,
                 txtMemoryEditor, btnSave, btnPurge, btnClose));
         }
 
@@ -80,50 +80,50 @@ namespace CaprICE.UI
             }
             catch (IOException ex)
             {
-                MessageBox.Show("Impossible de vérifier le chemin de la note active : " + ex.Message,
+                MessageBox.Show("Unable to verify the active note path: " + ex.Message,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             catch (UnauthorizedAccessException ex)
             {
-                MessageBox.Show("Accès refusé lors de la vérification de la note active : " + ex.Message,
+                MessageBox.Show("Access denied while verifying the active note path: " + ex.Message,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             catch (ArgumentException ex)
             {
-                MessageBox.Show("Chemin de note active invalide : " + ex.Message,
+                MessageBox.Show("Invalid active note path: " + ex.Message,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             catch (NotSupportedException ex)
             {
-                MessageBox.Show("Chemin de note active non pris en charge : " + ex.Message,
+                MessageBox.Show("Unsupported active note path: " + ex.Message,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             catch (SecurityException ex)
             {
-                MessageBox.Show("Impossible de vérifier le chemin de la note active : " + ex.Message,
+                MessageBox.Show("Unable to verify the active note path: " + ex.Message,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             StringBuilder prompt = new StringBuilder();
-            prompt.AppendLine("Cette action supprime les données Capri locales :");
-            prompt.AppendLine("• historique du chat");
-            prompt.AppendLine("• notes locales me.md / memories.md");
-            prompt.AppendLine("• transcriptions et cache de contexte actif");
+            prompt.AppendLine("This action deletes local Capri data:");
+            prompt.AppendLine("• chat history");
+            prompt.AppendLine("• local me.md / memories.md notes");
+            prompt.AppendLine("• transcripts and active context cache");
             if (!string.IsNullOrEmpty(vaultNote))
             {
                 prompt.AppendLine();
-                prompt.AppendLine("La note active du vault externe sera conservée :");
+                prompt.AppendLine("The active note in the external vault will be preserved:");
                 prompt.AppendLine(vaultNote);
             }
             prompt.AppendLine();
-            prompt.Append("Cette suppression est irréversible. Continuer ?");
+            prompt.Append("This deletion is permanent. Continue?");
 
-            DialogResult answer = MessageBox.Show(this, prompt.ToString(), "PURGE MÉMOIRE // CONFIRMATION",
+            DialogResult answer = MessageBox.Show(this, prompt.ToString(), "MEMORY PURGE // CONFIRMATION",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
             if (answer != DialogResult.Yes) return;
 
@@ -134,31 +134,31 @@ namespace CaprICE.UI
             }
             catch (IOException ex)
             {
-                MessageBox.Show("La purge a échoué : " + ex.Message,
+                MessageBox.Show("Purge failed: " + ex.Message,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             catch (UnauthorizedAccessException ex)
             {
-                MessageBox.Show("Accès refusé pendant la purge : " + ex.Message,
+                MessageBox.Show("Access denied during purge: " + ex.Message,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             catch (ArgumentException ex)
             {
-                MessageBox.Show("Chemin invalide pendant la purge : " + ex.Message,
+                MessageBox.Show("Invalid path during purge: " + ex.Message,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             catch (NotSupportedException ex)
             {
-                MessageBox.Show("Chemin non pris en charge pendant la purge : " + ex.Message,
+                MessageBox.Show("Unsupported path during purge: " + ex.Message,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             catch (SecurityException ex)
             {
-                MessageBox.Show("La purge a échoué : " + ex.Message,
+                MessageBox.Show("Purge failed: " + ex.Message,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -170,28 +170,28 @@ namespace CaprICE.UI
             catch (IOException ex)
             {
                 txtMemoryEditor.Clear();
-                MessageBox.Show("Les données locales ont été traitées, mais la note conservée ne peut pas être rechargée : "
+                MessageBox.Show("Local data was processed, but the preserved note could not be reloaded: "
                     + ex.Message, "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (UnauthorizedAccessException ex)
             {
                 txtMemoryEditor.Clear();
-                MessageBox.Show("Les données locales ont été traitées, mais l'accès à la note conservée est refusé : "
+                MessageBox.Show("Local data was processed, but access to the preserved note was denied: "
                     + ex.Message, "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             ClearChatDrawerCache();
             if (result.Errors.Count > 0)
             {
-                MessageBox.Show("Purge partielle. Certaines données n'ont pas pu être supprimées :\r\n\r\n"
+                MessageBox.Show("Partial purge. Some data could not be deleted:\r\n\r\n"
                     + string.Join("\r\n", result.Errors.ToArray()),
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string summary = "Données locales supprimées : " + result.DeletedPaths.Count + " fichier(s).";
+            string summary = "Local data deleted: " + result.DeletedPaths.Count + " file(s).";
             if (!string.IsNullOrEmpty(result.PreservedVaultNote))
-                summary += "\r\n\r\nNote du vault préservée :\r\n" + result.PreservedVaultNote
-                    + "\r\n\r\nElle reste active et pourra être relue lors des prochaines requêtes.";
+                summary += "\r\n\r\nPreserved vault note:\r\n" + result.PreservedVaultNote
+                    + "\r\n\r\nIt remains active and may be read again during future requests.";
             MessageBox.Show(summary, "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }

@@ -29,7 +29,7 @@ namespace CaprICE.Startup
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Impossible de charger l'assembly Capri :\n" + ex.Message, "CaprICE Erreur",
+                MessageBox.Show("Unable to load the Capri assembly:\n" + ex.Message, "CaprICE Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return null;
             }
@@ -104,12 +104,12 @@ namespace CaprICE.Startup
                 // Attend la fermeture naturelle du thread Capri pendant 1,5 seconde
                 if (!capriThread.Join(1500))
                 {
-                    Debug.WriteLine("[CapriLauncher] Capri n'a pas quitté dans les temps, fermeture forcée de l'application.");
+                    Debug.WriteLine("[CapriLauncher] Capri did not exit in time; forcing application shutdown.");
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("[CapriLauncher] Exception lors de l'arrêt propre : " + ex.Message);
+                Debug.WriteLine("[CapriLauncher] Exception during graceful shutdown: " + ex.Message);
             }
         }
     }

@@ -63,7 +63,7 @@ namespace CaprICE.UI
             btnMin = CyberControls.Button("—", 42, 30, NeonTheme.Edge, NeonTheme.White);
             btnMin.Click += (s, e) => { this.WindowState = FormWindowState.Minimized; };
 
-            btnClose = CyberControls.Button("✕ FERMER", 95, 30, NeonTheme.Edge, NeonTheme.Rose);
+            btnClose = CyberControls.Button("✕ CLOSE", 95, 30, NeonTheme.Edge, NeonTheme.Rose);
             btnClose.Click += (s, e) => { ShutdownAndExit(); };
 
             pnlTopBar.Controls.Add(lblTitle);

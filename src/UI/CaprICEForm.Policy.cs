@@ -24,17 +24,17 @@ namespace CaprICE.UI
 
             Label lblModeTag = new Label
             {
-                Text = "POLITIQUE :",
+                Text = "POLICY:",
                 Font = NeonTheme.FontBadge,
                 ForeColor = NeonTheme.Rose,
                 Location = new Point(24, 14),
                 AutoSize = true
             };
 
-            rbMonitor = CreateRadio("1. Monitor Only", 130, SecurityPolicy.CurrentMode == PolicyMode.MonitorOnly, PolicyMode.MonitorOnly, "Mode passif : surveille et journalise chaque requête sans jamais bloquer.");
-            rbDlp = CreateRadio("2. Enforce DLP (Masquage)", 290, SecurityPolicy.CurrentMode == PolicyMode.EnforceDlp, PolicyMode.EnforceDlp, "Pare-feu DLP : détecte et masque automatiquement clés API, noms, téléphones, IP, adresses.");
-            rbStrictLocal = CreateRadio("3. Strict Local (Bloquer externe)", 510, SecurityPolicy.CurrentMode == PolicyMode.BlockExternal, PolicyMode.BlockExternal, "Bloque toute URL non-loopback, y compris les connexions vocales.");
-            rbAskConfirm = CreateRadio("4. Ask Confirmation", 750, SecurityPolicy.CurrentMode == PolicyMode.AskConfirmation, PolicyMode.AskConfirmation, "Demande l'approbation avant chaque connexion externe Brain ou Voice, avec l'URL réelle.");
+            rbMonitor = CreateRadio("1. Monitor Only", 130, SecurityPolicy.CurrentMode == PolicyMode.MonitorOnly, PolicyMode.MonitorOnly, "Passive mode: monitors and logs every request without blocking it.");
+            rbDlp = CreateRadio("2. Enforce DLP (Masking)", 290, SecurityPolicy.CurrentMode == PolicyMode.EnforceDlp, PolicyMode.EnforceDlp, "DLP protection: detects and automatically masks API keys, names, phone numbers, IP addresses, and street addresses.");
+            rbStrictLocal = CreateRadio("3. Strict Local (Block External)", 510, SecurityPolicy.CurrentMode == PolicyMode.BlockExternal, PolicyMode.BlockExternal, "Blocks every non-loopback URL, including voice connections.");
+            rbAskConfirm = CreateRadio("4. Ask for Confirmation", 750, SecurityPolicy.CurrentMode == PolicyMode.AskConfirmation, PolicyMode.AskConfirmation, "Requests approval before each external Brain or Voice connection and shows the actual URL.");
 
             pnlModes.Controls.Add(lblModeTag);
             pnlModes.Controls.Add(rbMonitor);
@@ -57,7 +57,7 @@ namespace CaprICE.UI
 
             lblExplainTitle = new Label
             {
-                Text = "[MODE ACTIF] 1. MONITOR ONLY :",
+                Text = "[ACTIVE MODE] 1. MONITOR ONLY:",
                 Font = NeonTheme.FontBadge,
                 ForeColor = NeonTheme.Cyan,
                 Location = new Point(24, 11),
@@ -66,7 +66,7 @@ namespace CaprICE.UI
 
             lblExplainBody = new Label
             {
-                Text = "Audit passif. Tous les prompts, contextes et mémoires envoyés aux modèles sont affichés en toute transparence.",
+                Text = "Passive audit. All prompts, context, and memory sent to models are visible for inspection.",
                 Font = NeonTheme.FontBody,
                 ForeColor = NeonTheme.White,
                 Location = new Point(265, 11),
@@ -111,30 +111,30 @@ namespace CaprICE.UI
                 case PolicyMode.MonitorOnly:
                     lblStatusChip.Text = "AUDIT / MONITOR";
                     lblStatusChip.BackColor = NeonTheme.Cyan;
-                    lblExplainTitle.Text = "[MODE ACTIF] 1. MONITOR ONLY :";
+                    lblExplainTitle.Text = "[ACTIVE MODE] 1. MONITOR ONLY:";
                     lblExplainTitle.ForeColor = NeonTheme.Cyan;
-                    lblExplainBody.Text = "Audit passif. Les prompts et contextes sortants sont inspectables ; Brain et Voice sont surveillés.";
+                    lblExplainBody.Text = "Passive audit. Outgoing prompts and context can be inspected; Brain and Voice are monitored.";
                     break;
                 case PolicyMode.EnforceDlp:
-                    lblStatusChip.Text = "DLP ACTIVÉ";
+                    lblStatusChip.Text = "DLP ENABLED";
                     lblStatusChip.BackColor = NeonTheme.StatusWarning;
-                    lblExplainTitle.Text = "[MODE ACTIF] 2. ENFORCE DLP :";
+                    lblExplainTitle.Text = "[ACTIVE MODE] 2. ENFORCE DLP:";
                     lblExplainTitle.ForeColor = NeonTheme.StatusWarning;
-                    lblExplainBody.Text = "Filtrage actif du texte : système, historique, mémoire et outils. Texte multimodal suspect bloqué ; pas d'OCR.";
+                    lblExplainBody.Text = "Filters system text, history, memory, and tools. Suspicious multimodal text is blocked; images are not OCR-scanned.";
                     break;
                 case PolicyMode.BlockExternal:
                     lblStatusChip.Text = "LOCAL ONLY";
                     lblStatusChip.BackColor = NeonTheme.Rose;
-                    lblExplainTitle.Text = "[MODE ACTIF] 3. STRICT LOCAL :";
+                    lblExplainTitle.Text = "[ACTIVE MODE] 3. STRICT LOCAL:";
                     lblExplainTitle.ForeColor = NeonTheme.Rose;
-                    lblExplainBody.Text = "Tout appel externe Brain ou Voice est bloqué. Seules les adresses loopback sont autorisées.";
+                    lblExplainBody.Text = "All external Brain and Voice requests are blocked. Only loopback addresses are allowed.";
                     break;
                 case PolicyMode.AskConfirmation:
                     lblStatusChip.Text = "CONFIRMATION ON";
                     lblStatusChip.BackColor = Color.FromArgb(200, 100, 255);
-                    lblExplainTitle.Text = "[MODE ACTIF] 4. ASK CONFIRMATION :";
+                    lblExplainTitle.Text = "[ACTIVE MODE] 4. ASK CONFIRMATION:";
                     lblExplainTitle.ForeColor = Color.FromArgb(200, 100, 255);
-                    lblExplainBody.Text = "Avant chaque connexion externe Brain ou Voice, vérifiez l'hôte réel et le contexte avant d'autoriser.";
+                    lblExplainBody.Text = "Review the actual host and outgoing context before allowing each external Brain or Voice connection.";
                     break;
             }
         }

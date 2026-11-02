@@ -29,10 +29,10 @@ namespace CaprICE.UI
             columns.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             columns.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 
-            Panel rules = BuildSectionPanel("DLP // RÈGLES DE MASQUAGE");
+            Panel rules = BuildSectionPanel("DLP // MASKING RULES");
             Label ruleIntro = new Label
             {
-                Text = "Contexte textuel inspecté ; pas d'OCR des images. Une détection dans le texte multimodal bloque l'envoi.",
+                Text = "Text context is inspected; images are not OCR-scanned. A detection in multimodal text blocks the request.",
                 Dock = DockStyle.Top,
                 Height = 42,
                 Font = NeonTheme.FontSmall,
@@ -40,15 +40,15 @@ namespace CaprICE.UI
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
-            cbApiKeys = CreateRuleCheck("Clés API & tokens secrets", SecurityPolicy.MaskApiKeys);
-            cbPasswords = CreateRuleCheck("Mots de passe & identifiants", SecurityPolicy.MaskPasswords);
-            cbPhones = CreateRuleCheck("Numéros de téléphone", SecurityPolicy.MaskPhoneNumbers);
-            cbIps = CreateRuleCheck("Adresses IP (IPv4 / IPv6)", SecurityPolicy.MaskIpAddresses);
-            cbAddresses = CreateRuleCheck("Adresses postales & codes postaux", SecurityPolicy.MaskPostalAddresses);
-            cbUserPaths = CreateRuleCheck("Chemins utilisateurs Windows", SecurityPolicy.MaskUserPaths);
-            cbEmails = CreateRuleCheck("Adresses e-mail", SecurityPolicy.MaskEmails);
-            cbCards = CreateRuleCheck("Numéros de carte bancaire", SecurityPolicy.MaskCreditCards);
-            cbNames = CreateRuleCheck("Noms personnalisés", SecurityPolicy.MaskCustomNames);
+            cbApiKeys = CreateRuleCheck("API keys & secret tokens", SecurityPolicy.MaskApiKeys);
+            cbPasswords = CreateRuleCheck("Passwords & credentials", SecurityPolicy.MaskPasswords);
+            cbPhones = CreateRuleCheck("Phone numbers", SecurityPolicy.MaskPhoneNumbers);
+            cbIps = CreateRuleCheck("IP addresses (IPv4 / IPv6)", SecurityPolicy.MaskIpAddresses);
+            cbAddresses = CreateRuleCheck("Street addresses & postal codes", SecurityPolicy.MaskPostalAddresses);
+            cbUserPaths = CreateRuleCheck("Windows user paths", SecurityPolicy.MaskUserPaths);
+            cbEmails = CreateRuleCheck("Email addresses", SecurityPolicy.MaskEmails);
+            cbCards = CreateRuleCheck("Credit card numbers", SecurityPolicy.MaskCreditCards);
+            cbNames = CreateRuleCheck("Custom names", SecurityPolicy.MaskCustomNames);
             FlowLayoutPanel checks = new FlowLayoutPanel
             {
                 Dock = DockStyle.Top,
@@ -66,14 +66,14 @@ namespace CaprICE.UI
             rules.Controls.Add(ruleIntro);
             SetSectionOrder(rules, ruleIntro, checks);
 
-            Panel custom = BuildSectionPanel("DONNÉES PERSONNELLES");
-            Label lblCustomNames = CreateSettingsSectionLabel("NOMS & PRÉNOMS À MASQUER");
+            Panel custom = BuildSectionPanel("PERSONAL DATA");
+            Label lblCustomNames = CreateSettingsSectionLabel("NAMES TO MASK");
             txtCustomNames = CreateSettingsTextBox(SecurityPolicy.CustomNames, 72);
-            Label lblCustomAddrs = CreateSettingsSectionLabel("ADRESSES PRIVÉES À MASQUER");
+            Label lblCustomAddrs = CreateSettingsSectionLabel("PRIVATE ADDRESSES TO MASK");
             txtCustomAddresses = CreateSettingsTextBox(SecurityPolicy.CustomAddresses, 100);
             Label customHint = new Label
             {
-                Text = "Sépare les entrées par une virgule. Ces valeurs ne sont pas incluses dans le journal DLP.",
+                Text = "Separate entries with commas. These values are not included in the DLP audit log.",
                 Font = NeonTheme.FontSmall,
                 ForeColor = NeonTheme.Faint,
                 Dock = DockStyle.Top,
@@ -88,7 +88,7 @@ namespace CaprICE.UI
 
             Label networkHint = new Label
             {
-                Text = "Les modes de la barre supérieure contrôlent les URL réelles de Brain et Voice. Les fournisseurs personnalisés sont classés à partir de leur hôte ; une destination externe inconnue reste externe.",
+                Text = "The modes in the top bar control the actual Brain and Voice URLs. Custom providers are classified by host; an unknown external destination remains external.",
                 Font = NeonTheme.FontSmall,
                 ForeColor = NeonTheme.Cyan,
                 BackColor = NeonTheme.Deep,
@@ -106,13 +106,13 @@ namespace CaprICE.UI
             content.Controls.Add(columns);
             content.SizeChanged += (s, e) => columns.Width = content.ClientSize.Width;
 
-            btnSaveSettings = CyberControls.Button("ENREGISTRER", 180, 36, NeonTheme.DeepEdge, NeonTheme.Cyan);
+            btnSaveSettings = CyberControls.Button("SAVE", 180, 36, NeonTheme.DeepEdge, NeonTheme.Cyan);
             btnSaveSettings.Click += (s, e) => SaveSettingsFromUi();
-            Button btnCloseSettings = CyberControls.Button("FERMER", 140, 32, NeonTheme.Edge, NeonTheme.Rose);
+            Button btnCloseSettings = CyberControls.Button("CLOSE", 140, 32, NeonTheme.Edge, NeonTheme.Rose);
             btnCloseSettings.Click += (s, e) => SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
 
             pnlSettingsDrawer.Controls.Add(BuildDrawerLayout(
-                "PARAMÈTRES DE CONFIDENTIALITÉ // MAINFRAME", NeonTheme.Rose,
+                "PRIVACY SETTINGS // MAINFRAME", NeonTheme.Rose,
                 content, btnSaveSettings, btnCloseSettings));
         }
 
@@ -199,12 +199,12 @@ namespace CaprICE.UI
 
             if (!SecurityPolicy.SaveSettings(out string error))
             {
-                MessageBox.Show("Impossible d'enregistrer les paramètres : " + error,
+                MessageBox.Show("Unable to save settings: " + error,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            MessageBox.Show("Paramètres enregistrés !", "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Settings saved.", "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Information);
             SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
         }
     }

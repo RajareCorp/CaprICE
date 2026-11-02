@@ -1,275 +1,155 @@
-# 🛡️ CaprICE
+# CaprICE
 
-**AI Security & Privacy Guard for Capri Desktop**
+<p align="center">
+  <strong>AI security and privacy controls for Capri Desktop</strong><br>
+  Inspect outgoing AI traffic, protect sensitive data, and manage local context.
+</p>
 
----
+<p align="center">
+  <a href="https://github.com/RajareCorp/CaprICE/releases/latest/download/CaprICE-windows.zip"><img src="https://img.shields.io/badge/Download%20for%20Windows-ff2a6d?style=for-the-badge" alt="Download CaprICE for Windows"></a>
 
-[Français](https://www.google.com/search?q=%23-version-fran%C3%A7aise) • [English](https://www.google.com/search?q=%23-english-version)
+<p align="center">
+  <a href="https://github.com/RajareCorp/CaprICE/releases/latest"><img src="https://img.shields.io/github/v/release/RajareCorp/CaprICE?label=latest&color=05d9e8&style=flat-square" alt="Latest release"></a>
+  <a href="https://github.com/RajareCorp/CaprICE/releases"><img src="https://img.shields.io/github/downloads/RajareCorp/CaprICE/total?color=05d9e8&style=flat-square" alt="Total downloads"></a>
+  <a href="https://github.com/RajareCorp/CaprICE/issues"><img src="https://img.shields.io/github/issues/RajareCorp/CaprICE?color=05d9e8&style=flat-square" alt="Open issues"></a>
+  <a href="https://github.com/RajareCorp/CaprICE/blob/main/SECURITY.md"><img src="https://img.shields.io/badge/security-policy-05d9e8?style=flat-square" alt="Security policy"></a>
+  <a href="https://github.com/RajareCorp/CaprICE/blob/main/CONTRIBUTING.md"><img src="https://img.shields.io/badge/contributions-welcome-05d9e8?style=flat-square" alt="Contributing guidelines"></a>
+</p>
 
----
+<p align="center">
+  <a href="#version-francaise">Français</a> · <a href="#english">English</a> · <a href="https://github.com/lachydotmcg/capri-desktop">Capri Desktop</a>
+</p>
 
-# 🇫🇷 Version Française
+<a id="version-francaise"></a>
 
-## 📋 Présentation
+## Présentation
 
-**CaprICE** est un injecteur et mod externe autonome tout-en-un conçu pour **Capri Desktop**. Il intercepte en mémoire l'ensemble des communications (locales et cloud) échangées avec les intelligences artificielles afin d'assurer la **sécurité**, la **confidentialité** et le **contrôle total des données**.
+**CaprICE** ajoute des contrôles de sécurité et de confidentialité à [Capri Desktop](https://github.com/lachydotmcg/capri-desktop). Il surveille les requêtes Brain et Voice, inspecte le contexte sortant et permet d'appliquer des règles locales. CaprICE est un projet externe : il ne modifie pas les fichiers de Capri.
 
-> **🔒 100% Externe & Non-Invasif**
-> Aucune ligne du code source de Capri n'a été modifiée. Le binaire `Capri.exe` reste intact.
+### Installation rapide (Windows)
 
----
+**Option recommandée — installateur et mises à jour :** téléchargez [`setup-caprice.ps1`](https://github.com/RajareCorp/CaprICE/releases/latest/download/setup-caprice.ps1) depuis la dernière release, puis exécutez-le dans PowerShell :
 
-## 🚀 Nouveautés & Améliorations Récentes
+```powershell
+powershell -ExecutionPolicy Bypass -File .\setup-caprice.ps1
+```
 
-### Contrôles de Fenêtre & Ergonomie
+Le script installe CaprICE pour l'utilisateur courant et crée un raccourci dans le menu Démarrer. Relancez-le pour mettre à jour. Fermez CaprICE avant installation ou mise à jour. Capri Desktop n'est pas inclus.
 
-* **Déplacement fluide** : Glissez-déposez la fenêtre via la bannière supérieure (`ReleaseCapture` + `SendMessage`).
-* **Redimensionnement** : La fenêtre sans bordure peut être redimensionnée par ses bords et ses coins ; sa taille minimale est de 1000 × 650 px.
-* **Fermeture rapide** : Bouton `[X]` dédié ou touche **Échap** (`ESC`).
-* **Minimisation** : Bouton `[_]` pour réduire la fenêtre dans la barre des tâches.
+**Installation manuelle :** téléchargez l'[archive Windows](https://github.com/RajareCorp/CaprICE/releases/latest/download/CaprICE-windows.zip), décompressez-la, puis placez `CaprICE.exe` **et** `0Harmony.dll` dans le dossier où Capri Desktop est installé (à côté de `Capri.exe`). Lancez ensuite `CaprICE.exe`. La DLL Harmony est requise par l'application ; ne la séparez pas de l'exécutable.
 
-### 📐 Dimensions & Lisibilité
+Pour désinstaller une installation créée par le script, sans supprimer les données utilisateur :
 
-* Résolution augmentée à **1240 x 800 px** pour une consultation optimale du trafic et de l'inspecteur de payload.
+```powershell
+powershell -ExecutionPolicy Bypass -File .\setup-caprice.ps1 -Uninstall
+```
 
-### 🛡️ Paramètres DLP
+### Fonctionnalités
 
-Le tiroir **SETTINGS** présente les règles en deux colonnes, dans le style du Mainframe. En mode Enforce DLP, l'inspection porte sur tout le contexte textuel construit pour le modèle : instructions système, historique, note mémoire, contexte rappelé, arguments d'outils et texte multimodal. Les pixels des images jointes ne sont pas analysés par OCR ; si une donnée sensible est détectée dans le texte multimodal, l'envoi est bloqué afin de ne pas corrompre son format.
+- **Politiques réseau :** surveillance, confirmation des connexions externes, ou blocage de toutes les connexions non-loopback.
+- **Prévention des fuites (DLP) :** détecte et peut masquer clés API, mots de passe, chemins Windows, emails, cartes bancaires, téléphones, IP, adresses et valeurs personnalisées.
+- **Inspection :** historique des événements, cibles, motifs de décision et aperçu détaillé du contexte.
+- **Gestion locale :** consultation des transcriptions, de la mémoire et des prompts personnalisés.
+- **Actions locales :** associe un mot-clé à un fichier ouvert par Windows. Les fichiers exécutables, notamment les scripts, peuvent s'exécuter.
 
-| Type de Donnée | Description / Formats Couverts |
+> **Limites DLP :** CaprICE inspecte le contenu textuel, pas les pixels des images. Une donnée sensible détectée dans le texte multimodal bloque l'envoi au lieu de modifier son format. La politique de sécurité active détermine quelles requêtes sont bloquées ou masquées.
+
+### Politiques de sécurité
+
+| Mode | Comportement |
 | --- | --- |
-| **Téléphones** | Formats français (`06`, `07`, `+33`...) et internationaux |
-| **Adresses IP** | Détection automatique des adresses IPv4 et IPv6 |
-| **Adresses postales** | Rues, avenues, boulevards, places, codes postaux |
-| **Noms & Prénoms** | Champ personnalisé (ex: `Dupont, Jean, Alice`) |
-| **Adresses privées** | Champ personnalisé (ex: `12 rue de la Paix, 75001 Paris`) |
-| **Identifiants secrets** | Clés API, tokens secrets, mots de passe, emails, cartes bancaires & chemins Windows (`C:\Users\...`) |
+| **MONITOR ONLY** | Observe et journalise sans bloquer les requêtes. |
+| **ENFORCE DLP** | Inspecte le contexte et masque les données détectées ; bloque si le masquage est désactivé ou impossible en contexte multimodal. |
+| **STRICT LOCAL** | Bloque les connexions non-loopback, y compris les connexions vocales. |
+| **ASK CONFIRMATION** | Demande l'approbation avant une connexion Brain ou Voice externe et affiche l'URL et un aperçu du contexte. |
 
-* **Sauvegarde** : Le bouton **ENREGISTRER** persiste les règles dans `caprice_settings.json` pour un rechargement automatique au démarrage.
-* Les noms et adresses personnalisés ne sont pas recopiés dans les libellés DLP du journal.
+La détection des fournisseurs se base sur l'hôte réel de l'URL ; les domaines ressemblants ne sont pas assimilés aux fournisseurs reconnus. Les clés API vocales ne sont pas journalisées.
 
-### 💡 Assistance & Interface Dynamique
+### Configuration
 
-* **Mode d'emploi** : Bouton **`? GUIDE`** ouvrant la documentation interactive.
-* **Bandeau temps réel** : Résumé explicatif sous le sélecteur de politique.
+- **SETTINGS** permet d'activer les règles DLP et de définir les noms/adresses personnalisés. Ces valeurs ne sont pas écrites dans les libellés DLP du journal d'audit.
+- **PROMPTS** permet d'adapter les sections Personality, Safety et Machinery. Les modifications sont sauvegardées dans les paramètres CaprICE.
+- **MEMORY** permet de consulter et sauvegarder la mémoire. La purge des données locales efface l'historique, les notes et les transcriptions concernés ; une note du vault externe sélectionnée est préservée.
+- L'action locale **Performance** affiche les mesures CPU, RAM et GPU disponibles sur cette machine. Ces mesures ne sont pas transmises au service d'IA.
 
----
+### macOS et Linux
 
-## 🔰 Les 4 Politiques de Sécurité
+CaprICE est actuellement une application Windows basée sur WinForms et des hooks spécifiques à Windows. Il n'existe pas encore de version macOS ou Linux ;
 
-```
-+-----------------------------------------------------------------------+
-|                         POLITIQUES DE SÉCURITÉ                        |
-+-------------------+---------------------------------------------------+
-| 🔍 MONITOR ONLY   | Audit passif sans interruption des requêtes.      |
-| 🛡️ ENFORCE DLP     | Masque les données sensibles du contexte sortant.  |
-| 🔒 STRICT LOCAL   | Bloque les URL externes ; autorise les loopbacks.  |
-| ✋ ASK CONFIRM    | Confirme chaque connexion externe avec son hôte.   |
-+-------------------+---------------------------------------------------+
+### Compiler depuis les sources
 
-```
-
-1. **MONITOR ONLY (Audit Passif)**
-N'interrompt jamais les requêtes. Observe et enregistre chaque échange en arrière-plan.
-2. **ENFORCE DLP (Prévention de Fuite de Données)**
-Scanne et masque les données sensibles dans le prompt complet avant un envoi externe. Si le masquage est désactivé et qu'une donnée sensible est détectée, la requête est bloquée.
-3. **STRICT LOCAL (Verrou Cloud / Offline)**
-Bloque immédiatement toute connexion vers une adresse non-loopback, y compris les connexions vocales. Les serveurs locaux loopback restent autorisés.
-4. **ASK CONFIRMATION (Contrôle Manuel)**
-Demande l'approbation avant chaque connexion externe de Brain ou Voice, en affichant l'URL réelle et un aperçu du contexte sortant. Les clés vocales ne sont jamais journalisées.
-
-La détection classe les fournisseurs à partir de l'hôte URI exact (ou de ses sous-domaines), sans confondre un domaine ressemblant avec un fournisseur reconnu.
-
-### 🧹 Purge mémoire
-
-Depuis le tiroir **MEMORY**, **PURGER LES DONNÉES LOCALES** supprime le chat, les notes locales et les transcriptions, puis vide l'historique, les captures et le cache mémoire actifs. La note sélectionnée dans un vault externe est préservée ; elle reste active et pourra être relue lors des prochaines requêtes.
-
-### ✍️ Lecture des prompts et de la mémoire
-
-Les éditeurs **PROMPTS** et **MEMORY** replient les longues lignes, conservent les retours à la ligne et mettent en couleur les titres Markdown, citations et listes. La mise en couleur est uniquement visuelle : le texte brut est celui qui est appliqué ou sauvegardé.
-
-Les trois sections du prompt personnalisé sont enregistrées avec les paramètres CaprICE lorsque **APPLIQUER LES HOOKS PROMPT** est sélectionné. Les retours à la ligne sont préservés au redémarrage.
-
-### ⚡ Actions locales
-
-Dans **ACTIONS**, associez un mot-clé exact à un fichier choisi localement. Quand ce mot est reconnu comme demande, CaprICE demande à Windows d'ouvrir le fichier avec l'application associée ; selon son type, certains fichiers comme les scripts peuvent s'exécuter. Le mot-clé **Performance** est réservé : il renvoie localement les mesures CPU, RAM et GPU 3D disponibles, sans transmettre ces valeurs au service d'IA. Les mesures GPU dépendent des compteurs exposés par Windows.
-
----
-
-## 🗂️ Structure du projet
-
-```
-caprice/
-├─ build-caprice.ps1     Script de compilation (compile src/**/*.cs)
-├─ lib/                  0Harmony.dll
-├─ docs/ARCHITECTURE.md  Détail de l'architecture et « où modifier quoi »
-└─ src/
-   ├─ Program.cs         Point d'entrée
-   ├─ Startup/           Localisation et lancement de Capri
-   ├─ Security/          Politiques, moteur DLP, réglages, journal d'audit
-   ├─ Hooks/             Patchs Harmony (Brain, Voice, Persona)
-   ├─ Services/          Mémoire (.md) et prompt d'origine
-   └─ UI/                Fenêtre, tiroirs, dialogues, thème néon
-```
-
-## 🛠️ Lancement & Compilation
-
-L'icône `Capr-ICE.ico` à la racine du dépôt est intégrée à l'exécutable lors de la compilation et utilisée par la fenêtre CaprICE.
-
-### Exécution du Binaire
-
-* **Depuis le dossier de build Windows** :
-```powershell
-.\out\windows\CaprICE.exe
-
-```
-
-
-* **Depuis le dossier source `caprice/**` :
-```powershell
-.\caprice\CaprICE.exe
-
-```
-
-
-
-### Recompilation
+Prérequis : Windows, Visual Studio Build Tools avec le compilateur C# (`csc.exe`) et `0Harmony.dll` dans `lib\`.
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File caprice\build-caprice.ps1
-
+powershell -ExecutionPolicy Bypass -File .\build-caprice.ps1
+.\out\CaprICE.exe
 ```
 
----
+Pour les détails de conception, consultez [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Les instructions de contribution et de signalement de failles sont dans [CONTRIBUTING.md](CONTRIBUTING.md) et [SECURITY.md](SECURITY.md).
 
----
+<a id="english"></a>
 
-# 🇬🇧 English Version
+## English
 
-## 📋 Overview
+**CaprICE** adds security and privacy controls to [Capri Desktop](https://github.com/lachydotmcg/capri-desktop). It monitors Brain and Voice requests, inspects outgoing context, and lets you apply local policies. CaprICE is an external project and does not modify Capri's files.
 
-**CaprICE** is an all-in-one standalone external mod and injector built for **Capri Desktop**. It intercepts all in-memory AI communications (local and cloud) to guarantee **security**, **privacy**, and **full data control**.
+### Quick start (Windows)
 
-> **🔒 100% External & Non-Invasive**
-> Zero modifications to Capri's source code. The `Capri.exe` binary remains completely untouched.
+**Recommended — installer and updates:** download [`setup-caprice.ps1`](https://github.com/RajareCorp/CaprICE/releases/latest/download/setup-caprice.ps1) from the latest release, then run it in PowerShell:
 
----
+```powershell
+powershell -ExecutionPolicy Bypass -File .\setup-caprice.ps1
+```
 
-## 🚀 Key Features & Updates
+The script installs CaprICE for the current user and adds a Start Menu shortcut. Run it again to update. Close CaprICE before installing or updating. Capri Desktop is not included.
 
-### 🪟 Window Controls & Ergonomics
+**Manual install:** download the [Windows archive](https://github.com/RajareCorp/CaprICE/releases/latest/download/CaprICE-windows.zip), extract it, then place both `CaprICE.exe` **and** `0Harmony.dll` in the Capri Desktop installation folder (next to `Capri.exe`). Launch `CaprICE.exe`. The Harmony DLL is required; keep it beside the executable.
 
-* **Smooth movement**: Drag-and-drop support across the entire top banner (`ReleaseCapture` + `SendMessage`).
-* **Quick close**: Dedicated `[X]` button or **Escape** (`ESC`) key.
-* **Minimize**: `[_]` button to minimize directly to the taskbar.
-* **Resize**: The borderless window can be resized from its edges and corners; minimum size is 1000 × 650 px.
+To uninstall a script-based installation without deleting user data:
 
-### 📐 Expanded Dimensions
+```powershell
+powershell -ExecutionPolicy Bypass -File .\setup-caprice.ps1 -Uninstall
+```
 
-* Higher resolution at **1240 x 800 px**, offering an expanded workspace for traffic logs and payload inspection.
+### Features
 
-### 🛡️ DLP Settings
+- **Network policies:** monitor traffic, confirm external connections, or block all non-loopback connections.
+- **Data loss prevention (DLP):** detects and can mask API keys, passwords, Windows paths, email addresses, credit cards, phone numbers, IP addresses, street addresses, and custom values.
+- **Inspection:** review events, targets, decision reasons, and detailed outgoing context.
+- **Local data management:** view transcripts, memory, and custom prompts.
+- **Local actions:** map a keyword to a file opened by Windows. Executables, including scripts, may run.
 
-The **SETTINGS** drawer uses a two-column layout inspired by Capri Mainframe. Enforce DLP scans the complete textual model context: system instructions, conversation history, memory note, recalled context, tool arguments, and multimodal text. Image pixels are not OCR-scanned; if sensitive data is found in multimodal text, the request is blocked to avoid corrupting its format.
+> **DLP limitations:** CaprICE inspects text, not image pixels. If sensitive data is found in multimodal text, the request is blocked rather than modifying its format. The active security policy determines which requests are masked or blocked.
 
-| Data Category | Detection & Masking Details |
+### Security policies
+
+| Mode | Behavior |
 | --- | --- |
-| **Phone Numbers** | French (`06`, `07`, `+33`...) and international patterns |
-| **IP Addresses** | Automatic IPv4 and IPv6 detection |
-| **Postal Addresses** | Street names, avenues, boulevards, postal codes |
-| **Custom Names** | Dedicated text field for specific names (e.g. `Doe, John, Alice`) |
-| **Custom Addresses** | Dedicated field for private locations (e.g. `10 Downing Street`) |
-| **Secrets & Keys** | API keys, secret tokens, passwords, emails, credit cards & Windows user paths (`C:\Users\...`) |
+| **MONITOR ONLY** | Monitors and logs without blocking requests. |
+| **ENFORCE DLP** | Inspects outgoing context and masks detected data; blocks requests if masking is disabled or cannot safely preserve multimodal content. |
+| **STRICT LOCAL** | Blocks non-loopback connections, including voice connections. |
+| **ASK CONFIRMATION** | Requests approval before an external Brain or Voice connection and shows its URL and a context preview. |
 
-* **Persistence**: Click **SAVE** to write rules to `caprice_settings.json`, automatically reloaded on boot.
-* Custom names and addresses are not included in DLP detection labels written to the audit log.
+Provider detection uses the URL's actual host; lookalike domains are not treated as recognized providers. Voice API keys are not logged.
 
-### 💡 Dynamic UI & In-App Guide
+### Settings and local data
 
-* **Interactive Guide**: Click **`? GUIDE`** to open detailed documentation for each mode.
-* **Live Banner**: Real-time summary strip explaining the active policy right below the selector.
+- **SETTINGS** lets you enable DLP rules and define custom names and addresses. Custom values are not written to DLP audit labels.
+- **PROMPTS** lets you customize the Personality, Safety, and Machinery sections. Changes are saved with CaprICE settings.
+- **MEMORY** lets you view and save memory. Purging local data deletes the applicable history, notes, and transcripts; a selected note in an external vault is preserved.
+- The local **Performance** action reports available CPU, RAM, and GPU measurements. These measurements are not sent to the AI service.
 
----
+### Mac and Linux — early preview
 
-## 🔰 The 4 Security Policies
+CaprICE is currently a Windows application built with WinForms and Windows-specific hooks. There is no macOS or Linux build yet; the button above is informational, not a download.
 
-```
-+-----------------------------------------------------------------------+
-|                          SECURITY POLICIES                            |
-+-------------------+---------------------------------------------------+
-| 🔍 MONITOR ONLY   | Passive audit with zero request interruption.      |
-| 🛡️ ENFORCE DLP     | Masks sensitive data in the complete outgoing input. |
-| 🔒 STRICT LOCAL   | Blocks non-loopback URLs; loopback stays allowed. |
-| ✋ ASK CONFIRM    | Confirms each external connection and its host.    |
-+-------------------+---------------------------------------------------+
+### Build from source
 
-```
-
-1. **MONITOR ONLY (Passive Audit)**
-Passively logs transactions without interfering with Capri operations.
-2. **ENFORCE DLP (Data Loss Prevention)**
-Scans and masks sensitive data in the complete input before an external request. If masking is disabled and sensitive data is found, the request is blocked.
-3. **STRICT LOCAL (Offline / Cloud Lock)**
-Blocks every non-loopback connection, including voice connections. Loopback servers remain allowed.
-4. **ASK CONFIRMATION (Manual Control)**
-Requests approval before each external Brain or Voice connection, showing its real URL and an outgoing-context preview. Voice API keys are never logged.
-
-Provider detection uses the URI host and exact provider-domain boundaries; lookalike domains are classified as unknown external targets.
-
-### 🧹 Memory purge
-
-From **MEMORY**, **PURGER LES DONNÉES LOCALES** removes chat history, local notes and transcripts, then clears active history, sightings and the memory cache. A note selected from an external vault is preserved; it remains active and may be read again in future requests.
-
-### ✍️ Prompt and memory readability
-
-The **PROMPTS** and **MEMORY** editors wrap long lines, preserve line breaks, and color Markdown headings, quotes, and lists. Formatting is visual only; applied and saved content remains plain text.
-
-All three custom prompt sections are stored with CaprICE settings when **APPLIQUER LES HOOKS PROMPT** is selected. Line breaks are preserved across restarts.
-
-### ⚡ Local actions
-
-In **ACTIONS**, map an exact keyword to a locally selected file. When the keyword is recognized as a request, CaprICE asks Windows to open it with its associated application; depending on its type, files such as scripts may execute. **Performance** is reserved and returns available CPU, RAM, and 3D GPU measurements locally, without sending them to the AI service. GPU measurements depend on counters exposed by Windows.
-
----
-
-## 🗂️ Project Structure
-
-```
-caprice/
-├─ build-caprice.ps1     Build script (compiles src/**/*.cs)
-├─ lib/                  0Harmony.dll
-├─ docs/ARCHITECTURE.md  Architecture details and "where to change what"
-└─ src/
-   ├─ Program.cs         Entry point
-   ├─ Startup/           Locating and launching Capri
-   ├─ Security/          Policies, DLP engine, settings, audit log
-   ├─ Hooks/             Harmony patches (Brain, Voice, Persona)
-   ├─ Services/          Memory (.md) and original prompt
-   └─ UI/                Window, drawers, dialogs, neon theme
-```
-
-## 🛠️ Usage & Build
-
-### Running CaprICE
-
-* **From the Windows build output** :
-```powershell
-.\out\windows\CaprICE.exe
-
-```
-
-
-* **From the `caprice/` directory** :
-```powershell
-.\caprice\CaprICE.exe
-
-```
-
-
-
-### Rebuilding from Source
+Requirements: Windows, Visual Studio Build Tools with the C# compiler (`csc.exe`), and `0Harmony.dll` in `lib\`.
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File caprice\build-caprice.ps1
-
+powershell -ExecutionPolicy Bypass -File .\build-caprice.ps1
+.\out\CaprICE.exe
 ```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for design details, [CONTRIBUTING.md](CONTRIBUTING.md) to contribute, and [SECURITY.md](SECURITY.md) to report a vulnerability.

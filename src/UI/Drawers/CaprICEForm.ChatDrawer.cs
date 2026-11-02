@@ -56,7 +56,7 @@ namespace CaprICE.UI
 
             Label lblTitle = new Label
             {
-                Text = "CHAT & TRANSCRIPTIONS",
+                Text = "CHAT & TRANSCRIPTS",
                 Font = NeonTheme.FontTitle,
                 ForeColor = NeonTheme.Yellow,
                 Dock = DockStyle.Fill,
@@ -66,7 +66,7 @@ namespace CaprICE.UI
 
             Label lblSub = new Label
             {
-                Text = "Historique, captures et journaux locaux de Capri.",
+                Text = "Capri chat history, screenshots, and local logs.",
                 Font = NeonTheme.FontSmall,
                 ForeColor = NeonTheme.Faint,
                 Dock = DockStyle.Fill,
@@ -83,7 +83,7 @@ namespace CaprICE.UI
             };
             pnlMessageList.SizeChanged += (s, e) => RenderMessageCards();
 
-            Button btnClose = CyberControls.Button("FERMER", 96, 30, NeonTheme.Edge, NeonTheme.Rose);
+            Button btnClose = CyberControls.Button("CLOSE", 96, 30, NeonTheme.Edge, NeonTheme.Rose);
             btnClose.Dock = DockStyle.Fill;
             btnClose.Margin = new Padding(4, 2, 0, 2);
             btnClose.Click += (s, e) => SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
@@ -100,12 +100,12 @@ namespace CaprICE.UI
             footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 
-            Button btnClearAll = CyberControls.Button("EFFACER LE CHAT", 240, 38, NeonTheme.Edge, NeonTheme.Rose);
+            Button btnClearAll = CyberControls.Button("CLEAR CHAT", 240, 38, NeonTheme.Edge, NeonTheme.Rose);
             btnClearAll.Dock = DockStyle.Fill;
             btnClearAll.Margin = new Padding(0, 4, 4, 4);
             btnClearAll.Click += (s, e) =>
             {
-                if (MessageBox.Show("Effacer tout l'historique de chat et les captures visuelles ?",
+                if (MessageBox.Show("Clear all chat history and visual snapshots?",
                     "CaprICE // Chat", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
                     currentChatData = ChatHistoryManager.LoadData();
@@ -115,12 +115,12 @@ namespace CaprICE.UI
                 }
             };
 
-            Button btnClearTranscripts = CyberControls.Button("EFFACER LES TRANSCRIPTIONS", 250, 38, NeonTheme.Edge, NeonTheme.Yellow);
+            Button btnClearTranscripts = CyberControls.Button("CLEAR TRANSCRIPTS", 250, 38, NeonTheme.Edge, NeonTheme.Yellow);
             btnClearTranscripts.Dock = DockStyle.Fill;
             btnClearTranscripts.Margin = new Padding(4, 4, 0, 4);
             btnClearTranscripts.Click += (s, e) =>
             {
-                if (MessageBox.Show("Supprimer les journaux quotidiens et unfolded.txt ?",
+                if (MessageBox.Show("Delete the daily logs and unfolded.txt?",
                     "CaprICE // Transcriptions", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
 
                 try
@@ -131,12 +131,12 @@ namespace CaprICE.UI
                 }
                 catch (IOException ex)
                 {
-                    MessageBox.Show("Impossible de supprimer les transcriptions : " + ex.Message,
+                    MessageBox.Show("Unable to delete transcripts: " + ex.Message,
                         "CaprICE // Transcriptions", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 catch (UnauthorizedAccessException ex)
                 {
-                    MessageBox.Show("Accès refusé lors de la suppression des transcriptions : " + ex.Message,
+                    MessageBox.Show("Access denied while deleting transcripts: " + ex.Message,
                         "CaprICE // Transcriptions", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             };
@@ -196,14 +196,14 @@ namespace CaprICE.UI
 
                 if (currentChatData.Seen != null && currentChatData.Seen.Count > 0)
                 {
-                    AddSectionHeader("--- CAPTURES D'ÉCRAN / MÉMOIRE VISUELLE ---", NeonTheme.Yellow, ref topOffset);
+                    AddSectionHeader("--- SCREENSHOTS / VISUAL MEMORY ---", NeonTheme.Yellow, ref topOffset);
 
                     for (int i = 0; i < currentChatData.Seen.Count; i++)
                     {
                         var sighting = currentChatData.Seen[i];
                         if (sighting == null) continue;
 
-                        string displayText = "[VU] " + sighting.Saw + (string.IsNullOrEmpty(sighting.Said) ? "" : "\r\n[RÉPONSE] " + sighting.Said);
+                        string displayText = "[SEEN] " + sighting.Saw + (string.IsNullOrEmpty(sighting.Said) ? "" : "\r\n[RESPONSE] " + sighting.Said);
 
                         Panel card = CreateMessageCard(
                             role: "SIGHTING",
@@ -324,7 +324,7 @@ namespace CaprICE.UI
                 Dock = DockStyle.Fill
             };
 
-            Button btnDelete = CyberControls.Button("SUPPRIMER", 130, 28, NeonTheme.Edge, NeonTheme.Rose);
+            Button btnDelete = CyberControls.Button("DELETE", 130, 28, NeonTheme.Edge, NeonTheme.Rose);
             btnDelete.Dock = DockStyle.Fill;
             btnDelete.Margin = Padding.Empty;
             btnDelete.Click += (s, e) => onDelete();
@@ -346,7 +346,7 @@ namespace CaprICE.UI
             if (index < 0)
             {
                 RenderMessageCards();
-                MessageBox.Show("Ce message n'existe plus dans l'historique actuel. La liste a été actualisée.",
+                MessageBox.Show("This message is no longer in the current history. The list has been refreshed.",
                     "CaprICE // Chat", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -364,7 +364,7 @@ namespace CaprICE.UI
             if (index < 0)
             {
                 RenderMessageCards();
-                MessageBox.Show("Cette capture n'existe plus dans l'historique actuel. La liste a été actualisée.",
+                MessageBox.Show("This snapshot is no longer in the current history. The list has been refreshed.",
                     "CaprICE // Chat", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -383,12 +383,12 @@ namespace CaprICE.UI
             }
             catch (IOException ex)
             {
-                MessageBox.Show("Impossible de supprimer la transcription : " + ex.Message,
+                MessageBox.Show("Unable to delete the transcript: " + ex.Message,
                     "CaprICE // Transcriptions", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (UnauthorizedAccessException ex)
             {
-                MessageBox.Show("Accès refusé lors de la suppression de la transcription : " + ex.Message,
+                MessageBox.Show("Access denied while deleting the transcript: " + ex.Message,
                     "CaprICE // Transcriptions", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -399,14 +399,14 @@ namespace CaprICE.UI
             {
                 if (clearBrainHistory && !CaprICEHook.ClearBrainHistory())
                 {
-                    MessageBox.Show("L'historique est enregistré, mais l'historique actif de Capri n'a pas pu être vidé.",
+                    MessageBox.Show("The history was saved, but Capri's active history could not be cleared.",
                         "CaprICE // Chat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
                 RenderMessageCards();
             }
             else
             {
-                MessageBox.Show("Erreur de sauvegarde : " + err, "CaprICE // Chat",
+                MessageBox.Show("Save error: " + err, "CaprICE // Chat",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -420,13 +420,13 @@ namespace CaprICE.UI
             }
             catch (IOException ex)
             {
-                MessageBox.Show("Impossible de lire les transcriptions : " + ex.Message,
+                MessageBox.Show("Unable to read transcripts: " + ex.Message,
                     "CaprICE // Transcriptions", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 currentTranscripts = new List<TranscriptData>();
             }
             catch (UnauthorizedAccessException ex)
             {
-                MessageBox.Show("Accès refusé lors de la lecture des transcriptions : " + ex.Message,
+                MessageBox.Show("Access denied while reading transcripts: " + ex.Message,
                     "CaprICE // Transcriptions", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 currentTranscripts = new List<TranscriptData>();
             }

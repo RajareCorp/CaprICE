@@ -77,12 +77,12 @@ namespace CaprICE.Hooks
                 if (SecurityPolicy.MaskDlpInPayloads)
                 {
                     status = InterceptStatus.DlpMasked;
-                    reason = "Données sensibles du contexte masquées avant transmission";
+                    reason = "Sensitive context data masked before transmission";
                 }
                 else
                 {
                     status = InterceptStatus.Blocked;
-                    reason = "Bloqué par Politique DLP (donnée sensible dans le contexte)";
+                    reason = "Blocked by DLP policy (sensitive data in context)";
                 }
             }
 
@@ -105,7 +105,7 @@ namespace CaprICE.Hooks
             if (status == InterceptStatus.Blocked)
             {
                 Report(ev);
-                text = "Ma requête a été bloquée par la politique de sécurité CaprICE (" + reason + ").";
+                text = "My request was blocked by CaprICE security policy (" + reason + ").";
                 return false;
             }
 
@@ -136,29 +136,29 @@ namespace CaprICE.Hooks
             foreach (string violation in partViolations)
                 if (!violations.Contains(violation)) violations.Add(violation);
             if (!string.IsNullOrEmpty(parts))
-                preview += "\r\n[Payload multimodal joint ; texte inspecté, images non analysées par OCR]";
+                preview += "\r\n[Multimodal payload attached; text inspected, images not OCR-scanned]";
             outgoingPreview = preview;
             if (violations.Count == 0) return true;
 
             InterceptStatus status = InterceptStatus.Allowed;
-            string reason = "Données sensibles détectées dans le contexte sortant (mode surveillance)";
+            string reason = "Sensitive data detected in outgoing context (monitor mode)";
             if (enforce)
             {
                 if (partViolations.Count > 0)
                 {
                     status = InterceptStatus.Blocked;
-                    reason = "Bloqué par Politique DLP (instruction multimodale non masquée pour préserver le format)";
+                    reason = "Blocked by DLP policy (multimodal content was not masked to preserve its format)";
                     dlpBlockReason = reason;
                 }
                 else if (SecurityPolicy.MaskDlpInPayloads)
                 {
                     status = InterceptStatus.DlpMasked;
-                    reason = "Données sensibles masquées dans le contexte complet avant transmission";
+                    reason = "Sensitive data masked in the complete context before transmission";
                 }
                 else
                 {
                     status = InterceptStatus.Blocked;
-                    reason = "Bloqué par Politique DLP (donnée sensible dans le contexte complet)";
+                    reason = "Blocked by DLP policy (sensitive data in the complete context)";
                     dlpBlockReason = reason;
                 }
             }
@@ -203,16 +203,16 @@ namespace CaprICE.Hooks
                 string content = "Cible : " + TargetDetector.DetectTarget(url)
                     + "\r\nURL : " + TargetDetector.SanitizeUrl(url)
                     + "\r\n\r\n--- CONTEXTE SORTANT ---\r\n"
-                    + (string.IsNullOrEmpty(outgoingPreview) ? "(Aucun aperçu de prompt disponible)" : outgoingPreview);
-                if (!CaprICEForm.PromptConfirmation("Connexion externe", content, new List<string>()))
+                    + (string.IsNullOrEmpty(outgoingPreview) ? "(No prompt preview available)" : outgoingPreview);
+                if (!CaprICEForm.PromptConfirmation("External connection", content, new List<string>()))
                 {
                     status = InterceptStatus.Blocked;
-                    reason = "Refusé par l'utilisateur";
+                    reason = "Denied by user";
                 }
                 else
                 {
                     status = InterceptStatus.Allowed;
-                    reason = "Connexion approuvée manuellement";
+                    reason = "Connection approved manually";
                 }
             }
 
@@ -235,12 +235,12 @@ namespace CaprICE.Hooks
             InterceptEvent ev = new InterceptEvent
             {
                 Url = "Capri://Brain/Reply",
-                TargetName = "Réponse IA -> Brain",
+                TargetName = "AI response -> Brain",
                 IsExternal = false,
                 Method = "REPLY",
                 ResponsePayload = __result,
                 Status = InterceptStatus.Allowed,
-                Reason = "Réponse reçue (" + __result.Length + " caractères)"
+                Reason = "Response received (" + __result.Length + " characters)"
             };
             CaprICEForm.NotifyEvent(ev);
         }

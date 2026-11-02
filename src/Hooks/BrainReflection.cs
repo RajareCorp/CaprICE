@@ -144,12 +144,12 @@ namespace CaprICE.Hooks
 
                 object images = ReadMemberValue(message, "Images");
                 int imageCount = CountItems(images);
-                if (imageCount > 0) preview.AppendLine("[Images jointes : " + imageCount + "]");
+                if (imageCount > 0) preview.AppendLine("[Attached images: " + imageCount + "]");
             }
 
             const int previewLimit = 12000;
             if (preview.Length > previewLimit)
-                return preview.ToString(0, previewLimit) + "\r\n[Contexte tronqué pour l'affichage]";
+                return preview.ToString(0, previewLimit) + "\r\n[Context truncated for display]";
             return preview.ToString();
         }
 
@@ -189,7 +189,7 @@ namespace CaprICE.Hooks
 
                 if (!string.IsNullOrEmpty(memPath) && File.Exists(memPath))
                 {
-                    sb.AppendLine("=== MÉMOIRE PERSISTANTE CAPRI (" + Path.GetFileName(memPath) + ") ===");
+                    sb.AppendLine("=== CAPRI PERSISTENT MEMORY (" + Path.GetFileName(memPath) + ") ===");
                     sb.AppendLine(File.ReadAllText(memPath));
                     sb.AppendLine();
                 }
@@ -217,7 +217,7 @@ namespace CaprICE.Hooks
                         turnCount = turns.Count;
                         if (turns.Count > 0)
                         {
-                            sb.AppendLine("=== HISTORIQUE DE CONVERSATION ENVOYÉ (" + turns.Count + " tours) ===");
+                            sb.AppendLine("=== SENT CONVERSATION HISTORY (" + turns.Count + " turns) ===");
                             foreach (string t in turns) sb.AppendLine(t);
                         }
                     }
@@ -225,7 +225,7 @@ namespace CaprICE.Hooks
             }
             catch { }
 
-            return sb.Length > 0 ? sb.ToString() : "(Mémoire et historique vides pour l'instant)";
+            return sb.Length > 0 ? sb.ToString() : "(Memory and history are currently empty)";
         }
 
         private static IList GetHistoryField(object brainInstance)

@@ -56,17 +56,17 @@ namespace CaprICE.Services
             }
             catch (Exception ex)
             {
-                result.Errors.Add("Impossible d'énumérer les transcriptions : " + ex.Message);
+                result.Errors.Add("Unable to enumerate transcripts: " + ex.Message);
             }
 
             try
             {
                 if (!CaprICEHook.ClearBrainHistory())
-                    result.Errors.Add("L'historique Capri en mémoire n'a pas pu être localisé.");
+                    result.Errors.Add("Capri's in-memory history could not be located.");
             }
             catch (Exception ex)
             {
-                result.Errors.Add("Impossible de vider l'état mémoire Capri : " + ex.Message);
+                result.Errors.Add("Unable to clear Capri's in-memory state: " + ex.Message);
             }
 
             return result;

@@ -15,17 +15,17 @@ namespace CaprICE.Security
             List<string> violations = new List<string>();
             if (string.IsNullOrEmpty(payload)) return violations;
 
-            CheckRule(DlpRules.ApiKeys, "Clé API", payload, violations, SecurityPolicy.MaskApiKeys);
+            CheckRule(DlpRules.ApiKeys, "API key", payload, violations, SecurityPolicy.MaskApiKeys);
             CheckRule(DlpRules.Secrets, "Token / Secret", payload, violations, SecurityPolicy.MaskApiKeys);
-            CheckRule(DlpRules.Passwords, "Mot de passe", payload, violations, SecurityPolicy.MaskPasswords);
-            CheckRule(DlpRules.UserPaths, "Chemin Utilisateur Windows", payload, violations, SecurityPolicy.MaskUserPaths);
-            CheckRule(DlpRules.Emails, "Adresse Email", payload, violations, SecurityPolicy.MaskEmails);
-            CheckRule(DlpRules.CreditCards, "Numéro Carte Bancaire", payload, violations, SecurityPolicy.MaskCreditCards);
-            CheckRule(DlpRules.Phones, "Numéro de Téléphone", payload, violations, SecurityPolicy.MaskPhoneNumbers);
-            CheckRule(DlpRules.Ipv4, "Adresse IPv4", payload, violations, SecurityPolicy.MaskIpAddresses);
-            CheckRule(DlpRules.Ipv6, "Adresse IPv6", payload, violations, SecurityPolicy.MaskIpAddresses);
-            CheckRule(DlpRules.PostalAddresses, "Adresse Postale", payload, violations, SecurityPolicy.MaskPostalAddresses);
-            CheckRule(DlpRules.PostalCodes, "Code Postal", payload, violations, SecurityPolicy.MaskPostalAddresses);
+            CheckRule(DlpRules.Passwords, "Password", payload, violations, SecurityPolicy.MaskPasswords);
+            CheckRule(DlpRules.UserPaths, "Windows user path", payload, violations, SecurityPolicy.MaskUserPaths);
+            CheckRule(DlpRules.Emails, "Email address", payload, violations, SecurityPolicy.MaskEmails);
+            CheckRule(DlpRules.CreditCards, "Credit card number", payload, violations, SecurityPolicy.MaskCreditCards);
+            CheckRule(DlpRules.Phones, "Phone number", payload, violations, SecurityPolicy.MaskPhoneNumbers);
+            CheckRule(DlpRules.Ipv4, "IPv4 address", payload, violations, SecurityPolicy.MaskIpAddresses);
+            CheckRule(DlpRules.Ipv6, "IPv6 address", payload, violations, SecurityPolicy.MaskIpAddresses);
+            CheckRule(DlpRules.PostalAddresses, "Street address", payload, violations, SecurityPolicy.MaskPostalAddresses);
+            CheckRule(DlpRules.PostalCodes, "Postal code", payload, violations, SecurityPolicy.MaskPostalAddresses);
 
             // Noms & prénoms personnalisés
             if (SecurityPolicy.MaskCustomNames)
@@ -33,7 +33,7 @@ namespace CaprICE.Security
                 foreach (string name in SplitList(SecurityPolicy.CustomNames, 2))
                 {
                     if (NameRegex(name).IsMatch(payload))
-                        violations.Add("Nom / Prénom personnalisé");
+                        violations.Add("Custom name");
                 }
             }
 
@@ -43,7 +43,7 @@ namespace CaprICE.Security
                 foreach (string addr in SplitList(SecurityPolicy.CustomAddresses, 3))
                 {
                     if (AddressRegex(addr).IsMatch(payload))
-                        violations.Add("Adresse personnelle personnalisée");
+                        violations.Add("Custom address");
                 }
             }
 
@@ -77,13 +77,13 @@ namespace CaprICE.Security
             if (SecurityPolicy.MaskCustomNames)
             {
                 foreach (string name in SplitList(SecurityPolicy.CustomNames, 2))
-                    payload = NameRegex(name).Replace(payload, "[REDACTED:NOM]");
+                    payload = NameRegex(name).Replace(payload, "[REDACTED:NAME]");
             }
 
             if (SecurityPolicy.MaskPostalAddresses)
             {
                 foreach (string addr in SplitList(SecurityPolicy.CustomAddresses, 3))
-                    payload = AddressRegex(addr).Replace(payload, "[REDACTED:ADRESSE]");
+                    payload = AddressRegex(addr).Replace(payload, "[REDACTED:ADDRESS]");
             }
 
             return payload;
@@ -95,7 +95,7 @@ namespace CaprICE.Security
             MatchCollection matches = rx.Matches(payload);
             if (matches.Count > 0)
             {
-                violations.Add(name + " (" + matches.Count + " détection" + (matches.Count > 1 ? "s" : "") + ")");
+                violations.Add(name + " (" + matches.Count + " match" + (matches.Count > 1 ? "es" : "") + ")");
             }
         }
 

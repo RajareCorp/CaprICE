@@ -55,15 +55,15 @@ namespace CaprICE.Security
                 if (MaskDlpInPayloads)
                 {
                     payload = DlpEngine.Redact(payload);
-                    reason = "Données sensibles masquées avant transmission (" + string.Join(", ", violations.ToArray()) + ")";
+                    reason = "Sensitive data masked before transmission (" + string.Join(", ", violations.ToArray()) + ")";
                     return InterceptStatus.DlpMasked;
                 }
 
-                reason = "Bloqué par Politique DLP (" + string.Join(", ", violations.ToArray()) + ")";
+                reason = "Blocked by DLP policy (" + string.Join(", ", violations.ToArray()) + ")";
                 return InterceptStatus.Blocked;
             }
 
-            reason = violations.Count > 0 ? "Données sensibles détectées (mode surveillance)" : "Aucune donnée sensible détectée";
+            reason = violations.Count > 0 ? "Sensitive data detected (monitor mode)" : "No sensitive data detected";
             return InterceptStatus.Allowed;
         }
 
@@ -72,17 +72,17 @@ namespace CaprICE.Security
             bool isExternal = TargetDetector.IsUrlExternal(url);
             if (isExternal && CurrentMode == PolicyMode.BlockExternal)
             {
-                reason = "Bloqué par Politique Strict Local (connexion externe interdite)";
+                reason = "Blocked by Strict Local policy (external connection denied)";
                 return InterceptStatus.Blocked;
             }
 
             if (isExternal && CurrentMode == PolicyMode.AskConfirmation)
             {
-                reason = "Approbation requise avant la connexion externe";
+                reason = "Approval required before external connection";
                 return InterceptStatus.PendingApproval;
             }
 
-            reason = "Autorisé";
+            reason = "Allowed";
             return InterceptStatus.Allowed;
         }
     }

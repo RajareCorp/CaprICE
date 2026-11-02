@@ -30,7 +30,7 @@ namespace CaprICE.UI
 
                 Label lblWarn = new Label
                 {
-                    Text = "CONNEXION EXTERNE // CONFIRMATION REQUISE",
+                    Text = "EXTERNAL CONNECTION // CONFIRMATION REQUIRED",
                     Font = NeonTheme.FontTitle,
                     ForeColor = NeonTheme.Rose,
                     Location = new Point(22, 16),
@@ -48,12 +48,12 @@ namespace CaprICE.UI
                     ForeColor = NeonTheme.White,
                     Font = NeonTheme.FontMono,
                     BorderStyle = BorderStyle.None,
-                    Text = "Vérifiez la cible et le contenu avant d'autoriser.\r\n\r\n" + content
+                    Text = "Review the target and content before allowing the request.\r\n\r\n" + content
                 };
 
                 Button btnAllow = new Button
                 {
-                    Text = "AUTORISER L'ENVOI",
+                    Text = "ALLOW REQUEST",
                     Location = new Point(320, 435),
                     Size = new Size(200, 42),
                     BackColor = NeonTheme.Field,
@@ -66,7 +66,7 @@ namespace CaprICE.UI
 
                 Button btnBlock = new Button
                 {
-                    Text = "BLOQUER",
+                    Text = "BLOCK",
                     Location = new Point(535, 435),
                     Size = new Size(125, 42),
                     BackColor = NeonTheme.Field,

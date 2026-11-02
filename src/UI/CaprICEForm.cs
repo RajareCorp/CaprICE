@@ -364,7 +364,7 @@ namespace CaprICE.UI
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Erreur lors de l'arrêt de Capri : " + ex.Message);
+                Debug.WriteLine("Error while shutting down Capri: " + ex.Message);
             }
             finally
             {

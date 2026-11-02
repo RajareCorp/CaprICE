@@ -43,7 +43,7 @@ namespace CaprICE.Security
             {
                 Validate(action.Keyword, action.FilePath, false);
                 if (!keywords.Add(action.Keyword))
-                    throw new ArgumentException("Chaque mot-clé doit être unique.");
+                    throw new ArgumentException("Each keyword must be unique.");
                 validated.Add(action);
             }
 
@@ -77,7 +77,7 @@ namespace CaprICE.Security
                 {
                     string[] parts = line.Split('\t');
                     if (parts.Length != 2)
-                        throw new FormatException("Une association de lancement est mal formée.");
+                        throw new FormatException("A launch mapping is malformed.");
 
                     string keyword = Encoding.UTF8.GetString(Convert.FromBase64String(parts[0]));
                     string executablePath = Encoding.UTF8.GetString(Convert.FromBase64String(parts[1]));
@@ -98,8 +98,8 @@ namespace CaprICE.Security
 
                 if (!File.Exists(action.FilePath))
                 {
-                    reply = "Impossible d'ouvrir " + Path.GetFileName(action.FilePath)
-                        + " : le fichier configuré est introuvable.";
+                    reply = "Unable to open " + Path.GetFileName(action.FilePath)
+                        + ": the configured file could not be found.";
                     return true;
                 }
 
@@ -111,13 +111,13 @@ namespace CaprICE.Security
                         WorkingDirectory = Path.GetDirectoryName(action.FilePath),
                         UseShellExecute = true
                     });
-                    reply = "J'ouvre " + Path.GetFileName(action.FilePath) + ".";
+                    reply = "Opening " + Path.GetFileName(action.FilePath) + ".";
                 }
                 catch (Exception ex) when (ex is Win32Exception || ex is InvalidOperationException || ex is IOException)
                 {
                     Debug.WriteLine("Unable to run configured application: " + ex);
-                    reply = "L'ouverture de " + Path.GetFileName(action.FilePath)
-                        + " a échoué : " + ex.Message;
+                    reply = "Failed to open " + Path.GetFileName(action.FilePath)
+                        + ": " + ex.Message;
                 }
                 return true;
             }
@@ -136,13 +136,13 @@ namespace CaprICE.Security
             keyword = NormalizeCommand(keyword);
             if (keyword.Length == 0 || keyword.Length > 64
                 || keyword.IndexOfAny(new[] { ' ', '\t', '\r', '\n' }) >= 0)
-                throw new ArgumentException("Le mot-clé doit être un seul mot de 1 à 64 caractères.");
+                throw new ArgumentException("The keyword must be a single word between 1 and 64 characters.");
             if (string.Equals(keyword, "Performance", StringComparison.OrdinalIgnoreCase))
-                throw new ArgumentException("Le mot-clé « Performance » est réservé.");
+                throw new ArgumentException("The keyword 'Performance' is reserved.");
             if (string.IsNullOrWhiteSpace(filePath) || !Path.IsPathRooted(filePath))
-                throw new ArgumentException("Sélectionnez un chemin de fichier complet.");
+                throw new ArgumentException("Select a fully qualified file path.");
             if (requireExistingFile && !File.Exists(filePath))
-                throw new FileNotFoundException("Le fichier sélectionné est introuvable.", filePath);
+                throw new FileNotFoundException("The selected file could not be found.", filePath);
         }
     }
 }

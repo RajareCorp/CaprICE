@@ -22,7 +22,7 @@ namespace CaprICE.UI
                 BackColor = NeonTheme.Band
             };
 
-            btnClear = CyberControls.Button("VIDER LISTE", 125, 32, NeonTheme.Edge, NeonTheme.White);
+            btnClear = CyberControls.Button("CLEAR LIST", 125, 32, NeonTheme.Edge, NeonTheme.White);
             btnClear.Location = new Point(24, 10);
             btnClear.Click += (s, e) =>
             {
@@ -31,19 +31,19 @@ namespace CaprICE.UI
                 rtbInspector.Clear();
             };
 
-            btnOpenAudit = CyberControls.Button("OUVRIR JOURNAL (LOG)", 185, 32, NeonTheme.DeepEdge, NeonTheme.Cyan);
+            btnOpenAudit = CyberControls.Button("OPEN AUDIT LOG", 185, 32, NeonTheme.DeepEdge, NeonTheme.Cyan);
             btnOpenAudit.Location = new Point(160, 10);
             btnOpenAudit.Click += (s, e) =>
             {
                 if (File.Exists(SecurityPolicy.AuditLogPath))
                     Process.Start("notepad.exe", SecurityPolicy.AuditLogPath);
                 else
-                    MessageBox.Show("Aucune entrée d'audit pour le moment.", "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("There are no audit entries yet.", "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Information);
             };
 
             Label lblProxy = new Label
             {
-                Text = "PROXY AMONT (OPTIONNEL) :",
+                Text = "UPSTREAM PROXY (OPTIONAL):",
                 Font = NeonTheme.FontSmall,
                 ForeColor = NeonTheme.Faint,
                 Location = new Point(570, 17),
@@ -63,13 +63,13 @@ namespace CaprICE.UI
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Right
             };
 
-            btnSetProxy = CyberControls.Button("ACTIVER PROXY", 130, 28, NeonTheme.Edge, NeonTheme.White);
+            btnSetProxy = CyberControls.Button("SET PROXY", 130, 28, NeonTheme.Edge, NeonTheme.White);
             btnSetProxy.Location = new Point(980, 12);
             btnSetProxy.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             btnSetProxy.Click += (s, e) =>
             {
                 CaprICEHook.CustomProxyUrl = txtProxyInput.Text.Trim();
-                MessageBox.Show("Proxy amont configuré : " + CaprICEHook.CustomProxyUrl, "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Upstream proxy configured: " + CaprICEHook.CustomProxyUrl, "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Information);
             };
 
             pnlBottom.Controls.Add(btnClear);

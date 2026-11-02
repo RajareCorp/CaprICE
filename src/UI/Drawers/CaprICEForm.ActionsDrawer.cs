@@ -28,7 +28,7 @@ namespace CaprICE.UI
             {
                 Dock = DockStyle.Top,
                 Height = 62,
-                Text = "Associez un mot exact à un fichier local. Windows l'ouvrira selon son type ; certains fichiers, comme les scripts, peuvent s'exécuter.",
+                Text = "Map an exact keyword to a local file. Windows opens it based on its file type; some files, such as scripts, may execute.",
                 ForeColor = NeonTheme.Faint,
                 Font = NeonTheme.FontBody,
                 TextAlign = ContentAlignment.MiddleLeft
@@ -77,11 +77,11 @@ namespace CaprICE.UI
                 BorderStyle = BorderStyle.FixedSingle,
                 ReadOnly = true
             };
-            Button btnBrowse = CyberControls.Button("PARCOURIR", 94, 28, NeonTheme.Edge, NeonTheme.Cyan);
+            Button btnBrowse = CyberControls.Button("BROWSE", 94, 28, NeonTheme.Edge, NeonTheme.Cyan);
             btnBrowse.Dock = DockStyle.Fill;
             btnBrowse.Click += BrowseActionExecutable;
 
-            fields.Controls.Add(CreateActionFieldLabel("Mot-clé"), 0, 0);
+            fields.Controls.Add(CreateActionFieldLabel("Keyword"), 0, 0);
             fields.Controls.Add(txtActionKeyword, 1, 0);
             fields.Controls.Add(new Label { Text = "", Dock = DockStyle.Fill }, 2, 0);
             fields.Controls.Add(CreateActionFieldLabel("Fichier"), 0, 1);
@@ -92,15 +92,15 @@ namespace CaprICE.UI
             content.Controls.Add(fields);
             content.Controls.Add(description);
 
-            Button btnSaveAction = CyberControls.Button("AJOUTER / METTRE À JOUR", 250, 36, NeonTheme.DeepEdge, NeonTheme.Cyan);
+            Button btnSaveAction = CyberControls.Button("ADD / UPDATE", 250, 36, NeonTheme.DeepEdge, NeonTheme.Cyan);
             btnSaveAction.Click += SaveAppLaunchAction;
-            Button btnRemoveAction = CyberControls.Button("SUPPRIMER L'ASSOCIATION", 240, 36, NeonTheme.Edge, NeonTheme.Rose);
+            Button btnRemoveAction = CyberControls.Button("REMOVE MAPPING", 240, 36, NeonTheme.Edge, NeonTheme.Rose);
             btnRemoveAction.Click += RemoveAppLaunchAction;
-            Button btnClose = CyberControls.Button("FERMER", 120, 32, NeonTheme.Edge, NeonTheme.Rose);
+            Button btnClose = CyberControls.Button("CLOSE", 120, 32, NeonTheme.Edge, NeonTheme.Rose);
             btnClose.Click += (s, e) => SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
 
             pnlActionsDrawer.Controls.Add(BuildDrawerLayout(
-                "ACTIONS LOCALES // MOT-CLÉ → APPLICATION", NeonTheme.Cyan, content,
+                "LOCAL ACTIONS // KEYWORD → APPLICATION", NeonTheme.Cyan, content,
                 btnSaveAction, btnRemoveAction, btnClose));
             RefreshAppLaunchActions();
         }
@@ -121,8 +121,8 @@ namespace CaprICE.UI
         {
             using (OpenFileDialog dialog = new OpenFileDialog())
             {
-                dialog.Title = "Choisir le fichier à ouvrir";
-                dialog.Filter = "Tous les fichiers (*.*)|*.*";
+                dialog.Title = "Select a file to open";
+                dialog.Filter = "All files (*.*)|*.*";
                 dialog.CheckFileExists = true;
                 dialog.Multiselect = false;
                 if (dialog.ShowDialog(this) == DialogResult.OK)
@@ -145,7 +145,7 @@ namespace CaprICE.UI
             }
             catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is UnauthorizedAccessException)
             {
-                MessageBox.Show("Impossible d'enregistrer l'action : " + ex.Message,
+                MessageBox.Show("Unable to save the action: " + ex.Message,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -166,7 +166,7 @@ namespace CaprICE.UI
             if (!SecurityPolicy.SaveSettings(out error))
             {
                 AppLaunchActions.ReplaceAll(previous);
-                MessageBox.Show("Les associations n'ont pas été sauvegardées : " + error,
+                MessageBox.Show("The mappings could not be saved: " + error,
                     "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }

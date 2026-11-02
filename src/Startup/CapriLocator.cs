@@ -50,8 +50,8 @@ namespace CaprICE.Startup
         {
             using (OpenFileDialog ofd = new OpenFileDialog())
             {
-                ofd.Title = "CaprICE // Sélectionner le binaire Capri.exe";
-                ofd.Filter = "Exécutable Capri (Capri.exe)|Capri.exe|Tous les exécutables (*.exe)|*.exe";
+                ofd.Title = "CaprICE // Select Capri.exe";
+                ofd.Filter = "Capri executable (Capri.exe)|Capri.exe|All executables (*.exe)|*.exe";
                 string defaultDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Capri");
                 if (Directory.Exists(defaultDir)) ofd.InitialDirectory = defaultDir;
 
@@ -60,7 +60,7 @@ namespace CaprICE.Startup
                     return ofd.FileName;
                 }
 
-                MessageBox.Show("CaprICE a besoin de Capri.exe pour fonctionner.", "CaprICE",
+                MessageBox.Show("CaprICE requires Capri.exe to run.", "CaprICE",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return null;
             }

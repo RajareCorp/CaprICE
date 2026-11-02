@@ -72,7 +72,7 @@ namespace CaprICE.Services
             if (string.IsNullOrEmpty(fileName) || Path.GetFileName(fileName) != fileName
                 || (fileName != "unfolded.txt" && Path.GetExtension(fileName) != ".md"))
             {
-                throw new IOException("Nom de transcription invalide.");
+                throw new IOException("Invalid transcript name.");
             }
 
             return Path.Combine(TranscriptDirectory, fileName);

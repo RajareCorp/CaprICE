@@ -44,11 +44,11 @@ namespace CaprICE.UI
             content.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
             content.RowStyles.Add(new RowStyle(SizeType.Absolute, 145F));
 
-            Label lblPersonality = CreateSectionLabel("1. PERSONALITY (Personnage, Ton, Lore)");
+            Label lblPersonality = CreateSectionLabel("1. PERSONALITY (Character, Tone, Lore)");
             txtPersonality = CreateCodeTextBox(NeonTheme.Rose);
-            Label lblSafety = CreateSectionLabel("2. SAFETY (Sécurité, Limites, Comportement)");
+            Label lblSafety = CreateSectionLabel("2. SAFETY (Security, Limits, Behavior)");
             txtSafety = CreateCodeTextBox(NeonTheme.StatusWarning);
-            Label lblMachinery = CreateSectionLabel("3. MACHINERY (Contraintes de Format & Voice)");
+            Label lblMachinery = CreateSectionLabel("3. MACHINERY (Format & Voice Constraints)");
             txtMachinery = CreateCodeTextBox(NeonTheme.Cyan);
 
             content.Controls.Add(lblPersonality, 0, 0);
@@ -60,10 +60,10 @@ namespace CaprICE.UI
             pnlContentScroll.Controls.Add(content);
             pnlContentScroll.SizeChanged += (s, e) => content.Width = pnlContentScroll.ClientSize.Width;
 
-            Button btnFetchOriginal = CyberControls.Button("RECHARGER PROMPTS ORIGINAUX", 240, 34, NeonTheme.Edge, NeonTheme.Cyan);
+            Button btnFetchOriginal = CyberControls.Button("LOAD ORIGINAL PROMPTS", 240, 34, NeonTheme.Edge, NeonTheme.Cyan);
             btnFetchOriginal.Click += (s, e) => LoadOriginalsIntoFields();
 
-            Button btnSave = CyberControls.Button("APPLIQUER LES HOOKS PROMPT", 250, 36, NeonTheme.DeepEdge, NeonTheme.Rose);
+            Button btnSave = CyberControls.Button("APPLY PROMPT HOOKS", 250, 36, NeonTheme.DeepEdge, NeonTheme.Rose);
             btnSave.Click += (s, e) =>
             {
                 string previousPersonality = CaprICEHook.CustomPersonality;
@@ -78,21 +78,21 @@ namespace CaprICE.UI
                     CaprICEHook.CustomPersonality = previousPersonality;
                     CaprICEHook.CustomSafety = previousSafety;
                     CaprICEHook.CustomMachinery = previousMachinery;
-                    MessageBox.Show("Le prompt n'a pas été sauvegardé : " + error,
+                    MessageBox.Show("The prompt could not be saved: " + error,
                         "CaprICE", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
                 bool historyCleared = CaprICEHook.ClearBrainHistory();
                 MessageBox.Show(historyCleared
-                        ? "Prompt personnalisé sauvegardé et appliqué."
-                        : "Prompt sauvegardé et appliqué, mais l'historique actif de Capri n'a pas pu être vidé.",
+                        ? "Custom prompt saved and applied."
+                        : "Prompt saved and applied, but Capri's active history could not be cleared.",
                     "CaprICE", MessageBoxButtons.OK,
                     historyCleared ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
                 SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
             };
 
-            Button btnClose = CyberControls.Button("FERMER", 120, 32, NeonTheme.Edge, NeonTheme.Rose);
+            Button btnClose = CyberControls.Button("CLOSE", 120, 32, NeonTheme.Edge, NeonTheme.Rose);
             btnClose.Click += (s, e) => SwitchWorkspaceView(pnlSecurityView, btnNavSecurity);
 
             pnlPromptDrawer.Controls.Add(BuildDrawerLayout(

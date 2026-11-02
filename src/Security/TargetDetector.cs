@@ -19,7 +19,7 @@ namespace CaprICE.Security
         public static string DetectTarget(string url)
         {
             Uri uri;
-            if (!Uri.TryCreate(url, UriKind.Absolute, out uri)) return "Cible inconnue";
+            if (!Uri.TryCreate(url, UriKind.Absolute, out uri)) return "Unknown target";
 
             string host = uri.Host.TrimEnd('.').ToLowerInvariant();
             if (!IsUrlExternal(url))
@@ -29,7 +29,7 @@ namespace CaprICE.Security
                 if (uri.Port == 1337) return "Jan (Local)";
                 if (uri.Port == 5001) return "KoboldCpp (Local)";
                 if (uri.Port == 8080) return "llama.cpp (Local)";
-                return "Serveur local" + (uri.IsDefaultPort ? "" : " :" + uri.Port);
+                return "Local server" + (uri.IsDefaultPort ? "" : " :" + uri.Port);
             }
 
             if (IsHostOrSubdomain(host, "api.openai.com")) return "OpenAI (Cloud)";
@@ -40,13 +40,13 @@ namespace CaprICE.Security
             if (IsHostOrSubdomain(host, "openrouter.ai")) return "OpenRouter (Cloud)";
             if (IsHostOrSubdomain(host, "elevenlabs.io")) return "ElevenLabs Voice (Cloud)";
             if (IsHostOrSubdomain(host, "github.com")) return "GitHub";
-            return "API externe (" + host + ")";
+            return "External API (" + host + ")";
         }
 
         public static string SanitizeUrl(string url)
         {
             Uri uri;
-            if (!Uri.TryCreate(url, UriKind.Absolute, out uri)) return "URI invalide";
+            if (!Uri.TryCreate(url, UriKind.Absolute, out uri)) return "Invalid URI";
 
             UriBuilder safe = new UriBuilder(uri)
             {

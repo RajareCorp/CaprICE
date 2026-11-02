@@ -47,12 +47,12 @@ namespace CaprICE.UI
                 Font = NeonTheme.FontBody,
                 BorderStyle = BorderStyle.None
             };
-            lvEvents.Columns.Add("HEURE", 95);
-            lvEvents.Columns.Add("STATUT", 125);
-            lvEvents.Columns.Add("CIBLE", 210);
+            lvEvents.Columns.Add("TIME", 95);
+            lvEvents.Columns.Add("STATUS", 125);
+            lvEvents.Columns.Add("TARGET", 210);
             lvEvents.Columns.Add("TYPE", 110);
-            lvEvents.Columns.Add("LATENCE", 90);
-            lvEvents.Columns.Add("DÉTAILS / MOTIF DE DÉCISION", 650);
+            lvEvents.Columns.Add("LATENCY", 90);
+            lvEvents.Columns.Add("DETAILS / DECISION REASON", 650);
 
             lvEvents.SelectedIndexChanged += LvEvents_SelectedIndexChanged;
 
@@ -65,7 +65,7 @@ namespace CaprICE.UI
 
             Label lblInspHeader = new Label
             {
-                Text = "INSPECTEUR // CONTEXTE, MÉMOIRE, PROMPTS ET RÉPONSES DÉTAILLÉS",
+                Text = "INSPECTOR // DETAILED CONTEXT, MEMORY, PROMPTS & RESPONSES",
                 Font = NeonTheme.FontBadge,
                 ForeColor = NeonTheme.Rose,
                 Dock = DockStyle.Top,

@@ -19,16 +19,16 @@ namespace CaprICE.Services
 
         public static string GetReport()
         {
-            StringBuilder report = new StringBuilder("État des performances (mesures locales) :");
+            StringBuilder report = new StringBuilder("Performance status (local measurements):");
             try
             {
                 report.AppendLine();
-                report.Append("CPU : ").Append(ReadCpuUsage().ToString("0", CultureInfo.InvariantCulture)).Append("%");
+                report.Append("CPU: ").Append(ReadCpuUsage().ToString("0", CultureInfo.InvariantCulture)).Append("%");
             }
             catch (Win32Exception ex)
             {
                 Debug.WriteLine("Unable to read CPU usage: " + ex);
-                report.AppendLine().Append("CPU : indisponible (").Append(ex.Message).Append(')');
+                report.AppendLine().Append("CPU: unavailable (").Append(ex.Message).Append(')');
             }
 
             try
@@ -36,18 +36,18 @@ namespace CaprICE.Services
                 MemoryStatus memory = ReadMemoryStatus();
                 ulong used = memory.TotalPhysical - memory.AvailablePhysical;
                 double percent = memory.TotalPhysical == 0 ? 0 : used * 100.0 / memory.TotalPhysical;
-                report.AppendLine().Append("RAM : ")
+                report.AppendLine().Append("RAM: ")
                     .Append(ToGigabytes(used)).Append(" / ").Append(ToGigabytes(memory.TotalPhysical))
-                    .Append(" Go (").Append(percent.ToString("0", CultureInfo.InvariantCulture)).Append("%)");
+                    .Append(" GB (").Append(percent.ToString("0", CultureInfo.InvariantCulture)).Append("%)");
             }
             catch (Win32Exception ex)
             {
                 Debug.WriteLine("Unable to read RAM usage: " + ex);
-                report.AppendLine().Append("RAM : indisponible (").Append(ex.Message).Append(')');
+                report.AppendLine().Append("RAM: unavailable (").Append(ex.Message).Append(')');
             }
 
-            report.AppendLine().Append("GPU 3D : ").Append(ReadGpuUsage());
-            report.AppendLine().Append("Ces mesures restent sur cet ordinateur.");
+            report.AppendLine().Append("3D GPU: ").Append(ReadGpuUsage());
+            report.AppendLine().Append("These measurements stay on this computer.");
             return report.ToString();
         }
 
@@ -58,7 +58,7 @@ namespace CaprICE.Services
             SystemTimes after = GetSystemTimes();
             ulong idle = after.Idle - before.Idle;
             ulong total = after.Kernel - before.Kernel + after.User - before.User;
-            if (total == 0) throw new Win32Exception("Aucune mesure CPU n'a été fournie.");
+            if (total == 0) throw new Win32Exception("No CPU measurements were provided.");
             return Math.Max(0, Math.Min(100, (1.0 - (double)idle / total) * 100.0));
         }
 
@@ -91,17 +91,17 @@ namespace CaprICE.Services
             uint bufferLength = 0;
             uint status = PdhExpandWildCardPathW(null, GpuCounterPath, null, ref bufferLength, 0);
             if (status != PdhMoreData || bufferLength == 0)
-                return "indisponible (compteurs GPU Windows absents)";
+                return "unavailable (Windows GPU counters are missing)";
 
             StringBuilder paths = new StringBuilder((int)bufferLength);
             status = PdhExpandWildCardPathW(null, GpuCounterPath, paths, ref bufferLength, 0);
             if (status != 0)
-                return "indisponible (lecture des compteurs Windows impossible)";
+                return "unavailable (unable to read Windows counters)";
 
             IntPtr query;
             status = PdhOpenQueryW(null, UIntPtr.Zero, out query);
             if (status != 0)
-                return "indisponible (compteurs Windows, code " + status.ToString("X8") + ")";
+                return "unavailable (Windows counters, code " + status.ToString("X8") + ")";
 
             List<IntPtr> counters = new List<IntPtr>();
             try
@@ -116,12 +116,12 @@ namespace CaprICE.Services
                 }
 
                 if (counters.Count == 0)
-                    return "indisponible (aucun moteur 3D détecté)";
+                    return "unavailable (no 3D engine detected)";
                 if (PdhCollectQueryData(query) != 0)
-                    return "indisponible (lecture des compteurs GPU impossible)";
+                    return "unavailable (unable to read GPU counters)";
                 Thread.Sleep(350);
                 if (PdhCollectQueryData(query) != 0)
-                    return "indisponible (lecture des compteurs GPU impossible)";
+                    return "unavailable (unable to read GPU counters)";
 
                 double total = 0;
                 foreach (IntPtr counter in counters)

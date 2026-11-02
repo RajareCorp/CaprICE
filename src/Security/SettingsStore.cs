@@ -158,12 +158,12 @@ namespace CaprICE.Security
                     case 't': result.Append('\t'); break;
                     case 'u':
                         if (i + 4 >= value.Length)
-                            throw new FormatException("Séquence Unicode JSON incomplète.");
+                            throw new FormatException("Incomplete JSON Unicode sequence.");
                         result.Append((char)Convert.ToInt32(value.Substring(i + 1, 4), 16));
                         i += 4;
                         break;
                     default:
-                        throw new FormatException("Séquence d'échappement JSON invalide.");
+                        throw new FormatException("Invalid JSON escape sequence.");
                 }
             }
             return result.ToString();

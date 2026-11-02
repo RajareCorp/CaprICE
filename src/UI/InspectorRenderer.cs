@@ -29,18 +29,18 @@ namespace CaprICE.UI
             AppendStyledText($"  //  {ev.Timestamp:yyyy-MM-dd HH:mm:ss}  //  ", new Font("Consolas", 10F), NeonTheme.Faint);
             AppendStyledText($"[{ev.Status.ToString().ToUpper()}]\n", new Font("Consolas", 11F, FontStyle.Bold), statusColor);
 
-            AppendStyledText($"CIBLE   : ", new Font("Consolas", 9.5F, FontStyle.Bold), NeonTheme.Faint);
+            AppendStyledText($"TARGET  : ", new Font("Consolas", 9.5F, FontStyle.Bold), NeonTheme.Faint);
             AppendStyledText($"{ev.TargetName} ", new Font("Consolas", 9.5F, FontStyle.Bold), NeonTheme.White);
-            AppendStyledText($"({(ev.IsExternal ? "CLOUD EXTERNE" : "LOCAL LOOPBACK")})\n", new Font("Consolas", 9F), ev.IsExternal ? Color.Orange : NeonTheme.Cyan);
+            AppendStyledText($"({(ev.IsExternal ? "EXTERNAL CLOUD" : "LOCAL LOOPBACK")})\n", new Font("Consolas", 9F), ev.IsExternal ? Color.Orange : NeonTheme.Cyan);
 
             AppendStyledText($"URL     : ", new Font("Consolas", 9.5F, FontStyle.Bold), NeonTheme.Faint);
             AppendStyledText($"{ev.Url}\n", new Font("Consolas", 9F), NeonTheme.White);
 
-            AppendStyledText($"MOTIF   : ", new Font("Consolas", 9.5F, FontStyle.Bold), NeonTheme.Faint);
+            AppendStyledText($"REASON  : ", new Font("Consolas", 9.5F, FontStyle.Bold), NeonTheme.Faint);
             AppendStyledText($"{ev.Reason} ", new Font("Consolas", 9.5F), NeonTheme.White);
             if (ev.LatencyMs >= 0)
             {
-                AppendStyledText($" (Latence: {ev.LatencyMs} ms)\n", new Font("Consolas", 9F), NeonTheme.Faint);
+                AppendStyledText($" (Latency: {ev.LatencyMs} ms)\n", new Font("Consolas", 9F), NeonTheme.Faint);
             }
             else
             {
@@ -50,13 +50,13 @@ namespace CaprICE.UI
             if (ev.HistoryTurns > 0)
             {
                 AppendStyledText($"CONTEXTE: ", new Font("Consolas", 9.5F, FontStyle.Bold), NeonTheme.Faint);
-                AppendStyledText($"{ev.HistoryTurns} tour(s) d'historique actif(s)\n", new Font("Consolas", 9.5F), NeonTheme.Cyan);
+                AppendStyledText($"{ev.HistoryTurns} active history turn(s)\n", new Font("Consolas", 9.5F), NeonTheme.Cyan);
             }
 
             // Masquages DLP / Alertes
             if (ev.DlpMatches != null && ev.DlpMatches.Count > 0)
             {
-                AppendStyledText("\n[!] DÉTECTIONS DLP (SENSITIVE DATA):\n", new Font("Consolas", 10F, FontStyle.Bold), NeonTheme.StatusWarning);
+                AppendStyledText("\n[!] DLP DETECTIONS (SENSITIVE DATA):\n", new Font("Consolas", 10F, FontStyle.Bold), NeonTheme.StatusWarning);
                 foreach (var match in ev.DlpMatches)
                 {
                     AppendStyledText($"    • {match}\n", new Font("Consolas", 9.5F), NeonTheme.StatusWarning);
@@ -66,19 +66,19 @@ namespace CaprICE.UI
             // 2. Sections de données
             if (!string.IsNullOrEmpty(ev.RequestPayload))
             {
-                RenderSectionHeader("1. PROMPT UTILISATEUR ACTUEL ENVOYÉ", NeonTheme.Cyan);
+                RenderSectionHeader("1. CURRENT USER PROMPT SENT", NeonTheme.Cyan);
                 AppendContentBlock(ev.RequestPayload);
             }
 
             if (!string.IsNullOrEmpty(ev.ContextMemory))
             {
-                RenderSectionHeader("2. CONTEXTE ET MÉMOIRE UTILISÉE (me.md & HISTORIQUE)", Color.MediumSpringGreen);
+                RenderSectionHeader("2. CONTEXT & MEMORY USED (me.md & HISTORY)", Color.MediumSpringGreen);
                 AppendContentBlock(ev.ContextMemory);
             }
 
             if (!string.IsNullOrEmpty(ev.ResponsePayload))
             {
-                RenderSectionHeader("3. RÉPONSE DU MODÈLE", Color.Violet);
+                RenderSectionHeader("3. MODEL RESPONSE", Color.Violet);
                 AppendContentBlock(ev.ResponsePayload);
             }
 
