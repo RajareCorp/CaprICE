@@ -120,14 +120,14 @@ namespace CaprICE.UI
 
         private void LoadOriginalsIntoFields()
         {
-            txtPersonality.Text = PersonaReader.GetDefaultPersonality();
+            txtPersonality.Text = PersonaReader.GetPersonality();
             txtSafety.Text = PersonaReader.GetSafety();
             txtMachinery.Text = PersonaReader.GetMachinery();
         }
 
         private void ShowPromptDrawer()
         {
-            txtPersonality.Text = CaprICEHook.CustomPersonality ?? PersonaReader.GetDefaultPersonality();
+            txtPersonality.Text = CaprICEHook.CustomPersonality ?? PersonaReader.GetPersonality();
             txtSafety.Text = CaprICEHook.CustomSafety ?? PersonaReader.GetSafety();
             txtMachinery.Text = CaprICEHook.CustomMachinery ?? PersonaReader.GetMachinery();
             SwitchWorkspaceView(pnlPromptDrawer, btnNavPrompts);

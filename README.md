@@ -72,10 +72,6 @@ La détection des fournisseurs se base sur l'hôte réel de l'URL ; les domaines
 - **MEMORY** permet de consulter et sauvegarder la mémoire. La purge des données locales efface l'historique, les notes et les transcriptions concernés ; une note du vault externe sélectionnée est préservée.
 - L'action locale **Performance** affiche les mesures CPU, RAM et GPU disponibles sur cette machine. Ces mesures ne sont pas transmises au service d'IA.
 
-### macOS et Linux
-
-CaprICE est actuellement une application Windows basée sur WinForms et des hooks spécifiques à Windows. Il n'existe pas encore de version macOS ou Linux ;
-
 ### Compiler depuis les sources
 
 Prérequis : Windows, Visual Studio Build Tools avec le compilateur C# (`csc.exe`) et `0Harmony.dll` dans `lib\`.

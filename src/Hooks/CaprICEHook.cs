@@ -31,11 +31,18 @@ namespace CaprICE.Hooks
                 if (CustomPersonality == null && CustomSafety == null && CustomMachinery == null)
                     return null;
 
-                string p = CustomPersonality ?? PersonaReader.GetDefaultPersonality();
+                string p = CustomPersonality ?? PersonaReader.GetPersonality();
                 string s = CustomSafety ?? PersonaReader.GetSafety();
                 string m = CustomMachinery ?? PersonaReader.GetMachinery();
+                string holds = string.Equals(p, PersonaReader.GetDefaultPersonality(), StringComparison.Ordinal)
+                    ? null
+                    : PersonaReader.GetHolds();
 
-                return $"{p}\n{s}\n{m}";
+                string prompt = p;
+                if (!string.IsNullOrEmpty(holds)) prompt += "\n" + holds;
+                if (!string.IsNullOrEmpty(s)) prompt += "\n" + s;
+                if (!string.IsNullOrEmpty(m)) prompt += "\n" + m;
+                return prompt;
             }
             set
             {

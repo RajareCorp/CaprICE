@@ -38,8 +38,15 @@ namespace CaprICE.Services
         }
 
         public static string GetDefaultPersonality() => FormatWinForms(GetStaticStringFieldOrProp("DefaultPersonality"));
+        public static string GetPersonality()
+        {
+            string personality = GetStaticStringFieldOrProp("Personality");
+            return FormatWinForms(string.IsNullOrEmpty(personality) ? GetStaticStringFieldOrProp("DefaultPersonality") : personality);
+        }
+
         public static string GetSafety() => FormatWinForms(GetStaticStringFieldOrProp("Safety"));
         public static string GetMachinery() => FormatWinForms(GetStaticStringFieldOrProp("Machinery"));
+        public static string GetHolds() => FormatWinForms(GetStaticStringFieldOrProp("Holds"));
 
         public static string GetOriginalCapriPrompt()
         {
