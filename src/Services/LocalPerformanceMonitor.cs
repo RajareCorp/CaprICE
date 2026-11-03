@@ -19,16 +19,15 @@ namespace CaprICE.Services
 
         public static string GetReport()
         {
-            StringBuilder report = new StringBuilder("Performance status (local measurements):");
+            StringBuilder report = new StringBuilder();
             try
             {
-                report.AppendLine();
                 report.Append("CPU: ").Append(ReadCpuUsage().ToString("0", CultureInfo.InvariantCulture)).Append("%");
             }
             catch (Win32Exception ex)
             {
                 Debug.WriteLine("Unable to read CPU usage: " + ex);
-                report.AppendLine().Append("CPU: unavailable (").Append(ex.Message).Append(')');
+                report.Append("CPU: unavailable (").Append(ex.Message).Append(')');
             }
 
             try
@@ -36,18 +35,17 @@ namespace CaprICE.Services
                 MemoryStatus memory = ReadMemoryStatus();
                 ulong used = memory.TotalPhysical - memory.AvailablePhysical;
                 double percent = memory.TotalPhysical == 0 ? 0 : used * 100.0 / memory.TotalPhysical;
-                report.AppendLine().Append("RAM: ")
+                report.Append(" | RAM: ")
                     .Append(ToGigabytes(used)).Append(" / ").Append(ToGigabytes(memory.TotalPhysical))
                     .Append(" GB (").Append(percent.ToString("0", CultureInfo.InvariantCulture)).Append("%)");
             }
             catch (Win32Exception ex)
             {
                 Debug.WriteLine("Unable to read RAM usage: " + ex);
-                report.AppendLine().Append("RAM: unavailable (").Append(ex.Message).Append(')');
+                report.Append(" | RAM: unavailable (").Append(ex.Message).Append(')');
             }
 
-            report.AppendLine().Append("3D GPU: ").Append(ReadGpuUsage());
-            report.AppendLine().Append("These measurements stay on this computer.");
+            report.Append(" | 3D GPU: ").Append(ReadGpuUsage());
             return report.ToString();
         }
 
