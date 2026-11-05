@@ -38,6 +38,8 @@ Le script installe CaprICE pour l'utilisateur courant et crée un raccourci dans
 
 **Installation manuelle :** téléchargez l'[archive Windows](https://github.com/RajareCorp/CaprICE/releases/latest/download/CaprICE-windows.zip), décompressez-la, puis placez `CaprICE.exe` **et** `0Harmony.dll` dans le dossier où Capri Desktop est installé (à côté de `Capri.exe`). Lancez ensuite `CaprICE.exe`. La DLL Harmony est requise par l'application ; ne la séparez pas de l'exécutable.
 
+Si le démarrage automatique de Capri est activé, CaprICE remplace son entrée de démarrage Windows afin que Capri se lance ensuite via CaprICE. Une entrée désactivée n'est pas modifiée. Le désinstalleur restaure l'entrée Capri d'origine si elle pointe toujours vers CaprICE.
+
 Pour désinstaller une installation créée par le script, sans supprimer les données utilisateur :
 
 ```powershell
@@ -100,6 +102,8 @@ powershell -ExecutionPolicy Bypass -File .\setup-caprice.ps1
 The script installs CaprICE for the current user and adds a Start Menu shortcut. Run it again to update. Close CaprICE before installing or updating. Capri Desktop is not included.
 
 **Manual install:** download the [Windows archive](https://github.com/RajareCorp/CaprICE/releases/latest/download/CaprICE-windows.zip), extract it, then place both `CaprICE.exe` **and** `0Harmony.dll` in the Capri Desktop installation folder (next to `Capri.exe`). Launch `CaprICE.exe`. The Harmony DLL is required; keep it beside the executable.
+
+If Capri's automatic startup is enabled, CaprICE replaces its Windows startup entry so Capri will subsequently launch through CaprICE. A disabled entry is left unchanged. The uninstaller restores Capri's original entry if it still points to CaprICE.
 
 To uninstall a script-based installation without deleting user data:
 

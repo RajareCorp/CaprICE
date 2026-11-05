@@ -23,6 +23,7 @@ namespace CaprICE.UI
         private Panel pnlTopBar;
         private Button btnClose;
         private Button btnMin;
+        private Button btnMax;
 
         private Label lblTitle;
         private Label lblSubtitle;
@@ -157,7 +158,7 @@ namespace CaprICE.UI
             ShowChatDrawer();
 
             LayoutHeaderButtons();
-            NeonTheme.Clip(this, 20, 6);
+            UpdateWindowShape();
         }
 
         private void BuildSidebarNav()
@@ -310,9 +311,9 @@ namespace CaprICE.UI
         {
             base.OnPaint(e);
             NeonTheme.Backdrop(e.Graphics, this.Size, 140);
-            NeonTheme.Frame(e.Graphics, this.Size, 20, 6, 28, 28);
             if (WindowState == FormWindowState.Normal)
             {
+                NeonTheme.Frame(e.Graphics, this.Size, 20, 6, 28, 28);
                 using (Pen grip = new Pen(NeonTheme.Cyan, 1.4F))
                 {
                     for (int offset = 0; offset < 3; offset++)
@@ -338,6 +339,28 @@ namespace CaprICE.UI
             }
 
             base.WndProc(ref message);
+        }
+
+        private void UpdateWindowShape()
+        {
+            if (WindowState == FormWindowState.Normal)
+            {
+                NeonTheme.Clip(this, 20, 6);
+            }
+            else if (Region != null)
+            {
+                Region old = Region;
+                Region = null;
+                old.Dispose();
+            }
+
+            if (btnMax != null)
+            {
+                btnMax.Text = WindowState == FormWindowState.Maximized ? "❐" : "□";
+                btnMax.AccessibleName = WindowState == FormWindowState.Maximized ? "Restore" : "Maximize";
+            }
+
+            Invalidate();
         }
 
         public static bool PromptConfirmation(string title, string content, List<string> warnings)

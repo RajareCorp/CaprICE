@@ -26,6 +26,12 @@ namespace CaprICE.UI
         [DllImport("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetProcessDpiAwarenessContext(IntPtr dpiContext);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetProcessDPIAware();
+
         /// <summary>Lance le déplacement de la fenêtre en glissant avec le bouton gauche.</summary>
         public static void DragWindow(Form window, MouseEventArgs e)
         {

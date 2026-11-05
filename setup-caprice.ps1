@@ -19,6 +19,46 @@ if ($Uninstall) {
             throw 'Close CaprICE before uninstalling it.'
         }
 
+        $backupKeyPath = 'Software\CaprICE\Startup'
+        $startupKeyPath = 'Software\Microsoft\Windows\CurrentVersion\Run'
+        $backupKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($backupKeyPath)
+        if ($backupKey) {
+            try {
+                $originalCommand = $backupKey.GetValue('OriginalCapriCommand')
+            }
+            finally {
+                $backupKey.Dispose()
+            }
+
+            $startupKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($startupKeyPath, $true)
+            if ($startupKey) {
+                try {
+                    $currentCommand = $startupKey.GetValue('Capri') -as [string]
+                    if ($currentCommand -match '^"(?<path>[^"]+)"' -or
+                        $currentCommand -match '^(?<path>\S+)') {
+                        $currentPath = $Matches.path
+                        $installedExe = Join-Path $installDirectory 'CaprICE.exe'
+                        if ([string]::Equals(
+                            [IO.Path]::GetFullPath($currentPath),
+                            [IO.Path]::GetFullPath($installedExe),
+                            [StringComparison]::OrdinalIgnoreCase)) {
+                            if ($originalCommand) {
+                                $startupKey.SetValue('Capri', $originalCommand, [Microsoft.Win32.RegistryValueKind]::String)
+                            }
+                            else {
+                                $startupKey.DeleteValue('Capri', $false)
+                            }
+                        }
+                    }
+                }
+                finally {
+                    $startupKey.Dispose()
+                }
+            }
+
+            [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKeyTree($backupKeyPath, $false)
+        }
+
         foreach ($fileName in @('CaprICE.exe', '0Harmony.dll')) {
             $filePath = Join-Path $installDirectory $fileName
             if (Test-Path -LiteralPath $filePath) {

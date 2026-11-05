@@ -63,6 +63,15 @@ namespace CaprICE.UI
             btnMin = CyberControls.Button("—", 42, 30, NeonTheme.Edge, NeonTheme.White);
             btnMin.Click += (s, e) => { this.WindowState = FormWindowState.Minimized; };
 
+            btnMax = CyberControls.Button("□", 38, 30, NeonTheme.Edge, NeonTheme.White);
+            btnMax.AccessibleName = "Maximize";
+            btnMax.Click += (s, e) =>
+            {
+                this.WindowState = this.WindowState == FormWindowState.Maximized
+                    ? FormWindowState.Normal
+                    : FormWindowState.Maximized;
+            };
+
             btnClose = CyberControls.Button("✕ CLOSE", 95, 30, NeonTheme.Edge, NeonTheme.Rose);
             btnClose.Click += (s, e) => { ShutdownAndExit(); };
 
@@ -71,10 +80,11 @@ namespace CaprICE.UI
             pnlTopBar.Controls.Add(lblStatusChip);
             pnlTopBar.Controls.Add(lblStats);
             pnlTopBar.Controls.Add(btnMin);
+            pnlTopBar.Controls.Add(btnMax);
             pnlTopBar.Controls.Add(btnClose);
 
             pnlTopBar.Resize += (s, e) => LayoutHeaderButtons();
-            this.Resize += (s, e) => { LayoutHeaderButtons(); NeonTheme.Clip(this, 20, 6); };
+            this.Resize += (s, e) => { LayoutHeaderButtons(); UpdateWindowShape(); };
         }
 
         private void LayoutHeaderButtons()
@@ -83,6 +93,7 @@ namespace CaprICE.UI
             int right = pnlTopBar.ClientSize.Width - 22;
 
             if (btnClose != null) { btnClose.Location = new Point(right - btnClose.Width, 18); right -= btnClose.Width + 8; }
+            if (btnMax != null) { btnMax.Location = new Point(right - btnMax.Width, 18); right -= btnMax.Width + 8; }
             if (btnMin != null) { btnMin.Location = new Point(right - btnMin.Width, 18); right -= btnMin.Width + 14; }
             if (lblStatusChip != null) { lblStatusChip.Location = new Point(right - lblStatusChip.Width, 19); }
         }
